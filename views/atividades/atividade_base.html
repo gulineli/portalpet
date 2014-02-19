@@ -1,0 +1,98 @@
+{{
+left_sidebar_enabled,right_sidebar_enabled=True,False
+from atividade_utils import atividade_menu,periodos_shortcut
+atividade_menu(response,auth,atividade)
+if not request.function=='atividade':
+    session.show_header_atividade = session.force_show_header_atividade
+    pass
+}}
+
+{{extend globals().get('layout','layout.html') }}
+
+{{block header}}{{end}}
+{{block settings}}{{end}}
+
+<div class="widget-box transparent{{if not session.show_header_atividade:}} collapsed{{pass}}">
+    <div class="widget-header widget-header-flat">
+	    <h4 class="lighter">
+		    {{=atividade.nome}}
+	    </h4>
+
+	    <div class="widget-toolbar">
+		    <a href="#" data-action="collapse">
+			    <i class="show_atividade_set icon-chevron-{{if session.show_header_atividade:}}up{{else:}}down{{pass}}"></i>
+		    </a>
+	    </div>
+    </div>
+
+    <div class="widget-body">
+	    <div class="widget-main">
+            <div class="row" style="margin-bottom:20px;">
+                <div class="col-xs-12 col-sm-2">
+                    <img src="{{=URL('default','download',args=(atividade.miniatura,))}}" alt="Miniatura" />
+                </div>
+                <div class="col-xs-12 col-sm-10">
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-8">
+                            Data(s):
+                            {{=periodos_shortcut(db,atividade.id)}}
+                            {{if atividade.certifica:}}
+                                <div class="alert alert-block alert-success">
+                                    <strong><i class="icon-star orange2"></i> Haverá entrega de certificados!</strong>
+                                    {{if atividade.frequencia_minima:}}
+                                        <br><span class="red"> Frequência Mínima: <strong>{{=atividade.frequencia_minima}} %</strong></span>
+                                        {{pass}}
+                                </div>
+                                {{pass}}
+                        </div>
+                        <div class="col-xs-12 col-sm-4">
+                            <a class="btn btn-app btn-sm btn-purple pull-right" href="{{=URL('atividades','inscricao',args=(atividade.slug,))}}">
+                                <span class="line-height-1 bigger-170"> <i class="icon-signin"></i> </span>
+                                <br />
+                                <span class="line-height-1 smaller-80"> Inscreva-se<br>&nbsp; </span>
+                            </a>
+
+                            <span class="btn btn-app btn-sm btn-yellow pull-right">
+                                <span class="line-height-1 bigger-170"> <i class="icon-book"></i> </span>
+                                <br />
+                                <span class="line-height-1 smaller-90"> Submeter <br>Artigo </span>
+                            </span>
+
+                            <span class="btn btn-app btn-sm btn-pink pull-right">
+                                <span class="line-height-1 bigger-170"><i class="icon-cogs"></i></span>
+                                <br />
+                                <span class="line-height-1 smaller-90"> Arquivos<br>&nbsp; </span>
+                            </span>
+
+                            <span class="btn btn-app btn-sm btn-success pull-right">
+                                <span class="line-height-1 bigger-170"><i class="icon-picture"></i> </span>
+                                <br />
+                                <span class="line-height-1 smaller-90"> Albuns<br>&nbsp; </span>
+                            </span>
+                            {{if True:}}
+                                {{=A(XML('&nbsp; &nbsp; Modificar dados &nbsp;'),_href=URL('atividades','atividade',args=(atividade.slug,),vars=dict(action='editar')),_class="btn btn-primary pull-right")}}
+                                {{pass}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+	    </div><!-- /widget-main -->
+    </div><!-- /widget-body -->
+</div><!-- /widget-box -->
+
+{{include}}
+
+{{block script}}
+    {{super}}
+    <script type="text/javascript">
+		jQuery(function($) {
+		    $('.show_atividade_set').click(function(){
+		        $.ajax({
+                        type: "POST",
+                        url: "{{=URL('atividades','set_atividade_header')}}",
+                        data: {'show':$(this).attr('class').search('icon-chevron-up')}
+                        })
+		    })
+		})
+    </script>
+{{end}}

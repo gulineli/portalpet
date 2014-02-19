@@ -1,0 +1,37 @@
+{{extend 'grupos/grupo_base.html' }}
+
+{{# ifhasperm "grupo_permission.manager_atividade_grupo" request.user grupo }}
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      {{# ifhasperm "grupo_permission.manager_atividade_grupo" request.user grupo }}
+      <th width="20"></th>
+      {{# endifhasperm }}
+      <th >Nome</th>
+      <th width="10%">Natureza</th>
+      <th width="25%">Horário(s)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{ for a in atividades: }}
+      <tr>
+        {{# ifhasperm "grupo_permission.manager_atividade_grupo" request.user grupo }}
+          <td>
+            <a href="{{=URL('grupos','remove_atividade',args=(a.slug,)) }}" title="Apagar esta atividade" >
+              <i class="icon-trash"></i>
+            </a>
+          </td>
+        {{# endifhasperm }}
+        <td style="text-align:left;">
+          <a href="{{=URL('atividades','atividade',args=(a.slug,))}}">{{=a.nome}}</a>
+          [{{=A('editar',_href=URL('atividades','atividade',args=(a.slug,'editar')) )}}]
+        </td>
+        <td>{{=atividade_tipos[a.tipo]}}</td>
+        <td>{{=periodos_shortcut(db,a)}}</td>
+      </tr>
+    {{ pass }}
+  </tbody>
+</table>
+{{#else: }}
+{{ #include "portal/evento_list.html" }}
+{{# pass }}

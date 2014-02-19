@@ -1,0 +1,59 @@
+{{extend 'default/pessoa_base.html' }}
+
+{{ block extra_script }}
+  {{super}}
+  <script type="text/javascript">
+    $(function() {
+      $('.reply').on('click',function(e){
+        var $this = $(this);
+        $this.parent().parent().removeClass('alert alert-info')
+        .parent().parent().removeClass('alert alert-info');
+        var $lida = $this.next('a.lida');
+        if ($lida.length){
+            var href = $lida.attr('href');
+            ajax(href,'','');
+            $lida.remove();
+        }
+        $.ajax({
+                  type: "get"
+                , url: $this.attr('href')
+                , success: function(msg) {
+                    $this.parent().parent().children('.reply_block').html(msg).focus();
+             }
+        });
+        return false
+      });
+      $('.send').on('click',function(e){
+        var $this = $(this);
+        $.ajax({
+                  type: "get"
+                , url: $this.attr('href')
+                , success: function(msg) {
+                    $this.parent().parent().next('.send_block').html(msg).focus();
+              }
+        });
+        return false
+      });
+    });
+  </script>
+{{ end }}
+
+{{block tools}}
+  <a class="btn btn-info send pull-right" href="{{=URL('send_message',vars={'destinatarios':pessoa.pessoa.id})}}">
+    <i class="icon-message-plus icon-white" ></i> Nova Mensagem
+  </a>
+{{end}}
+
+<div class="send_block collapse{% if erro %} in{% endif %}"></div>
+{{if len(mensagens):}}
+  {{for mensagem in mensagens:}}
+    {{read = mensagem.readed()
+      can_del=True
+    }}
+    {{ include 'default/message_reply.html' }}
+    {{pass}}
+{{else:}}
+  <div class="alert alert-info">
+    <i class="icon-circle-info" ></i> Sua caixa está vazia!
+  </div>
+{{pass}}

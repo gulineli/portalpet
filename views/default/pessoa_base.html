@@ -1,0 +1,10 @@
+{{
+left_sidebar_enabled,right_sidebar_enabled=False,False
+from pessoa_utils import pessoa_menu
+from general_utils import truncate_words
+pessoa_menu(response,auth)
+}}
+
+{{extend globals().get('layout','layout.html') }}
+
+{{include}}

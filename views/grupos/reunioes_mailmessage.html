@@ -1,0 +1,9 @@
+{{=HTML(
+    P(u'Este é um email automático. Por favor <strong>não</strong> responda.'),
+    P(u'Em anexo vocês podem conferir a ',db.reuniao._format(reuniao),BR(),
+      u'Secretário: ',reuniao.secretario_id.nome,BR(),
+      u'Número de tópicos discutidos: ',reuniao.topicos_set().count() or 0, BR(),
+      u'Ausentes: ',u', '.join([p.nome for p in reuniao.ausentes_set().select()]),BR()),
+    A(u'arquivo',_src="cid:arquivo"),
+    P(u'Equipe do Portal PET')
+) }}

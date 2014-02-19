@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]><html class="ie ie6 ie-lte9 ie-lte8 ie-lte7 no-js" lang="{{=T.accepted_language or 'en'}}"> <![endif]-->
+<!--[if IE 7]><html class="ie ie7 ie-lte9 ie-lte8 ie-lte7 no-js" lang="{{=T.accepted_language or 'en'}}"> <![endif]-->
+<!--[if IE 8]><html class="ie ie8 ie-lte9 ie-lte8 no-js" lang="{{=T.accepted_language or 'en'}}"> <![endif]-->
+<!--[if IE 9]><html class="ie9 ie-lte9 no-js" lang="{{=T.accepted_language or 'en'}}"> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!--> <html class="no-js" lang="{{=T.accepted_language or 'en'}}"> <!--<![endif]-->
+<head>
+  <!--
+    Charisma v1.0.0
+
+    Copyright 2012 Muhammad Usman
+    Licensed under the Apache License v2.0
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    http://usman.it
+    http://twitter.com/halalit_usman
+  -->
+  <meta charset="utf-8" />
+  <!-- www.phpied.com/conditional-comments-block-downloads/ -->
+  <!-- Always force latest IE rendering engine
+       (even in intranet) & Chrome Frame
+       Remove this if you use the .htaccess -->
+  <!--[if IE]>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge{{=not request.is_local and ',chrome=1' or ''}}">
+      <![endif]-->
+
+  <title>{{=response.title or request.application}}</title>
+
+  <meta name="application-name" content="{{=request.application}}" />
+  <meta name="google-site-verification" content="yJ6nut87YYmNYp53Aknjz9-BEQ7g_n7IRwKX2Jcae0k" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style type="text/css">
+    body {
+      padding: 80px 0 40px;
+      position: relative;
+    }
+    .affix {
+        position: fixed;
+        top: 56px;
+    }
+    .affix-on-top{
+      z-index:1000;
+    }
+  </style>
+  <link rel="shortcut icon" href="{{=URL('static','images/favicon.ico')}}" type="image/x-icon">
+  <link rel="apple-touch-icon" href="{{=URL('static','images/favicon.png')}}">
+
+  {{block extra_css}}{{end}}
+
+  {{include 'web2py_ajax.html'}}
+
+  {{block extra_script}}{{end}}
+
+  <script type="text/javascript">
+    $(document).ready(function()
+    {
+      var $window = $(window)
+      try{
+        $(".foreignkey").colorbox({width:"70%", height:"90%", iframe:true});
+      } catch(e) {};
+
+      $('.affix-on-top').affix({
+        offset: {
+          top: function () { return $window.width() <= 980 ? 290 : 210 }
+        , bottom: 270
+        }
+      });
+      $('.affix-on-top').each(function (){
+        $(this).attr({style:"width:" + ($(this).parent().width() - parseInt($(this).css('paddingLeft')) - parseInt($(this).css('paddingRight')) - parseInt($(this).css('marginLeft')) - parseInt($(this).css('marginRight')) - parseInt($(this).css('borderLeftWidth')) - parseInt($(this).css('borderRightWidth'))) + "px;"});
+      });
+    });
+  </script>
+  {{
+  # using sidebars need to know what sidebar you want to use
+  left_sidebar_enabled = globals().get('left_sidebar_enabled',False)
+  right_sidebar_enabled = globals().get('right_sidebar_enabled',False)
+  middle_columns = {0:'span12',1:'span9',3:'span10',4:'span7'}[
+    (left_sidebar_enabled and 1 or 0)+(right_sidebar_enabled and 3 or 0)]
+  }}
+
+  <noscript><link href="{{=URL('static', 'css/web2py_bootstrap_nojs.css')}}" rel="stylesheet" type="text/css" /></noscript>
+  {{block head}}{{end}}
+
+</head>
+
+<body>
+    <!-- topbar starts -->
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container-fluid">
+        <a class="btn btn-navbar" data-toggle="collapse" data-target=".top-nav.nav-collapse,.sidebar-nav.nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </a>
+        <a class="brand" href="{{=URL('default','index.html')}}"><span>Portal PET</span></a>
+
+        <!-- user dropdown starts -->
+        <ul id="navbar" class="nav pull-right">{{='auth' in globals() and auth.navbar(mode="dropdown") or ''}}</ul>
+        <!-- user dropdown ends -->
+
+        <div class="top-nav nav-collapse">
+          <ul class="nav">
+            <li><a href="#">Visit Site</a></li>
+            <li>
+              <form class="navbar-search pull-left">
+                <input placeholder="Search" class="search-query span2" name="query" type="text">
+              </form>
+            </li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+  </div>
+  <!-- topbar ends -->
+  <header class="container-fluid header" id="header">
+    <div class="row-fluid">
+      <div class="span12">
+          <div class="page-header" style="padding:0;margin:0 0 10px ;">
+              {{block header}}
+              <h1>
+                  {{=response.title or request.application}}
+                  <small>{{=response.subtitle or ''}}</small>
+              </h1>
+              {{end}}
+          </div>
+      </div>
+    </div>
+  </header>
+  <div class="container-fluid">
+    <div class="row-fluid">
+
+      <!-- left menu starts -->
+      <div class="span2 main-menu-span" style="position: relative;">
+        <div class="well nav-collapse sidebar-nav affix-on-top">
+          {{is_mobile=request.user_agent().is_mobile}}
+          {{if response.menu:
+            =MENU(response.menu, _class='mobile-menu nav' if is_mobile else 'nav  nav-tabs nav-stacked main-menu',mobile=is_mobile,li_class='dropdown',ul_class='dropdown-menu')
+            pass
+          }}
+        </div><!--/.well -->
+      </div><!--/span-->
+      <!-- left menu ends -->
+
+      <noscript>
+        <div class="alert alert-block span10">
+          <h4 class="alert-heading">Warning!</h4>
+          <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a> enabled to use this site.</p>
+        </div>
+      </noscript>
+
+      <div id="content" class="span10">
+      <!-- content starts -->
+        <div>
+          <ul class="breadcrumb affix-on-top">
+            <li>
+              <a href="#">Home</a> <span class="divider">/</span>
+            </li>
+            <li>
+              <a href="#">Dashboard</a>
+            </li>
+          </ul>
+
+          {{include}}
+
+        </div>
+      <!-- content ends -->
+      </div><!--/#content.span10-->
+    </div><!--/fluid-row-->
+
+    <hr>
+
+    <div class="modal hide fade" id="myModal">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3>Settings</h3>
+      </div>
+      <div class="modal-body">
+        <p>Here settings can be configured...</p>
+      </div>
+      <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">Close</a>
+        <a href="#" class="btn btn-primary">Save changes</a>
+      </div>
+    </div>
+
+    <footer>
+      <p class="pull-left">&copy; <a href="http://usman.it" target="_blank">Muhammad Usman</a> 2012</p>
+      <p class="pull-right">Powered by: <a href="http://usman.it/free-responsive-admin-template">Charisma</a></p>
+    </footer>
+
+  </div><!--/.fluid-container-->
+
+  <!-- external javascript
+  ================================================== -->
+  <!-- Placed at the end of the document so the pages load faster -->
+  <!--[if lt IE 7 ]>
+      <script src="{{=URL('static','js/dd_belatedpng.js')}}"></script>
+      <script> DD_belatedPNG.fix('img, .png_bg'); //fix any <img> or .png_bg background-images </script>
+      <![endif]-->
+
+  {{if response.google_analytics_id:}}
+  <script src="{{=URL('static','js/analytics.min.js')}}"></script>
+  <script type="text/javascript">
+  analytics.initialize({
+    'Google Analytics':{trackingId:'{{=response.google_analytics_id}}'}
+  });</script>
+  {{pass}}
+
+</body>
+</html>

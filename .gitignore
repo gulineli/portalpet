@@ -1,0 +1,15 @@
+DEVELOPMENT/*
+errors/*
+sessions/*
+.hg*
+.pythonhistory*
+uploads/*
+static/css-REMOVE/*
+static/js-REMOVE/*
+static/images-REMOVE/*
+static/bootstrap-REMOVE/*
+*~
+*.pyc
+server.*
+portalpet/*
+models/original*

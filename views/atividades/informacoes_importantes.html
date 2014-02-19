@@ -1,0 +1,91 @@
+<div class="well">
+  {{ if atividade.tutorial or atividade.tutorial_url: }}
+    <a href="{{ if atividade.tutorial_url: }}{{=atividade.tutorial_url}}{{ else: }}{{=URL('atividades','tutorial',args=(atividade.slug,) ) }}{{ pass }}" class="btn btn-primary pull-right foreignkey">
+      Tutorial
+    </a>
+  {{ pass }}
+  {{ if atividade.instrucoes: }}
+    <div class="widget-box">
+      <div class="widget-header">
+        <h5><i class="icon-info-sign"></i> Instruções</h5>
+
+        <div class="widget-toolbar">
+          <span class="label label-info arrowed-in-right arrowed">Info</span>
+          <a href="#" data-action="collapse">
+            <i class="1 icon-chevron-up bigger-125"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="widget-body">
+        <div class="widget-main padding-6">
+          <span class="text-info">{{=XML(atividade.instrucoes) }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="space-20"></div>
+  {{ pass }}
+
+  <div class="widget-box">
+    <div class="widget-header header-color-orange">
+      <h5><i class="icon-warning-sign"></i> Informações importantes</h5>
+
+      <div class="widget-toolbar">
+        <a href="#" data-action="collapse">
+          <i class="1 icon-chevron-up bigger-125"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="widget-body">
+      <div class="widget-main padding-6">
+        <div class="row">
+          <div class="col-xs-12 col-sm-9">
+            <ul>
+              {{ if atividade_inscricao.confirmacao: }}
+                <li>
+                  <i class="icon-circle-exclamation-mark"></i>
+                  Você deverá confirmar sua inscri&ccedil;&atilde;o de
+                  <em><u>{{=date2str(atividade_inscricao.inicio_confirmacao) }}</u></em> a
+                  <em><u>{{=date2str(atividade_inscricao.termino_confirmacao) }}</u></em> no site do portal
+                </li>
+              {{ pass }}
+              {{ if atividade_inscricao.valor: }}
+                <li>
+                  Valor base: <b>R$: {{="%.2f" %atividade_inscricao.valor }}</b>
+                  {{ if atividade_pagamento: }}
+                    [
+                    {{ if  atividade_pagamento.forma_pagamento=="bo": }}
+                      <i class="icon-barcode"></i> Boleto bancário - Vencimento em {{=atividade_pagamento.data_vencimento }}.
+                    {{ else: }}
+                      No ato da inscrição
+                    {{ pass }}
+                    ]
+                  {{ pass }}
+                </li>
+              {{ pass }}
+              {{ if groups or atividade_inscricao.insc_mestra: }}
+                <li>
+                  Apenas as seguintes pessoas podem se inscrever nesta atividade:
+                  <ul>
+                    {{ for group in groups: }}
+                      <li>{{=group.description}}</li>
+                    {{ pass ##END FOR }}
+                    {{ if atividade_inscricao.insc_mestra: }}
+                      <li>Inscritos em: <b>{{=atividade.nome}}</b</li>
+                    {{ pass }}
+                  </ul>
+                </li>
+              {{ pass }}
+            </ul>
+        </div>
+        <div class="col-xs-12 col-sm-3">
+          <h5>
+            <i class="icon-time"></i> Período de realização:
+          </h5>
+          {{=periodos_shortcut(db,atividade_inscricao) }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

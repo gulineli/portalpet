@@ -1,0 +1,134 @@
+{{extend 'default/pessoa_base.html' }}
+
+<div class="row">
+	<div class="col-xs-12">
+		<!-- PAGE CONTENT BEGINS -->
+		<div>
+			<div id="user-profile-1" class="user-profile row">
+				<div class="col-xs-12 col-sm-3 center">
+					<div>
+						<span class="profile-picture">
+							<img id="avatar" class="editable img-responsive" alt="{{=pessoa.pessoa.nome}}" src="{{=URL('download',args=(pessoa.pessoa.miniatura,))}}" />
+						</span>
+
+						<div class="space-4"></div>
+
+						<div class="width-80 label label-info label-xlg arrowed-in arrowed-in-right">
+							<div class="inline position-relative">
+								<a href="#" class="user-title-label dropdown-toggle" data-toggle="dropdown">
+									<i class="icon-circle light-green middle"></i>
+									&nbsp;
+									<span class="white">{{=truncate_words(pessoa.pessoa.nome,2)}}</span>
+								</a>
+
+								<ul class="align-left dropdown-menu dropdown-caret dropdown-lighter">
+									<li class="dropdown-header"> Mudar Status </li>
+
+									<li>
+										<a href="#">
+											<i class="icon-circle green"></i>
+											&nbsp;
+											<span class="green">Disponível</span>
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-circle red"></i>
+											&nbsp;
+											<span class="red">Ocupado</span>
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-circle grey"></i>
+											&nbsp;
+											<span class="grey">Invisível</span>
+										</a>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+
+					<div class="space-6"></div>
+
+					<div class="profile-contact-info">
+						<div class="profile-contact-links align-left">
+							<a class="btn btn-link" href="#">
+								<i class="icon-plus-sign bigger-120 green"></i>
+								Enviar convite de amizade
+							</a>
+
+							<a class="btn btn-link" href="#">
+								<i class="icon-envelope bigger-120 pink"></i>
+								Enviar mensagem
+							</a>
+
+<!--							<a class="btn btn-link" href="#">-->
+<!--								<i class="icon-globe bigger-125 blue"></i>-->
+<!--								www.alexdoe.com-->
+<!--							</a>-->
+						</div>
+
+						<div class="space-6"></div>
+
+						<div class="profile-social-links center">
+							<a href="#" class="tooltip-info" title="" data-original-title="Visit my Facebook">
+								<i class="middle icon-facebook-sign icon-2x blue"></i>
+							</a>
+
+							<a href="#" class="tooltip-info" title="" data-original-title="Visit my Twitter">
+								<i class="middle icon-twitter-sign icon-2x light-blue"></i>
+							</a>
+
+							<a href="#" class="tooltip-error" title="" data-original-title="Visit my Pinterest">
+								<i class="middle icon-pinterest-sign icon-2x red"></i>
+							</a>
+						</div>
+					</div>
+
+					<div class="hr hr12 dotted"></div>
+
+					<div class="clearfix">
+						<div class="grid2">
+							<span class="bigger-175 blue">25</span>
+
+							<br />
+							Followers
+						</div>
+
+						<div class="grid2">
+							<span class="bigger-175 blue">12</span>
+
+							<br />
+							Following
+						</div>
+					</div>
+
+					<div class="hr hr16 dotted"></div>
+				</div>
+
+				<div class="col-xs-12 col-sm-9">
+                    {{if action in ('criar','editar'):}}
+                      {{=form}}
+                    {{else:}}
+                      {{for field,value in render_fields(pessoa,db,exclude=['foto','miniatura','original_id','sobremim']):}}
+                        {{=DIV(DIV( DIV(field,_class="profile-info-name"),
+                                  DIV(value,_class="profile-info-value"),
+                                  _class="profile-info-row"
+                            ),
+                            _class="profile-user-info profile-user-info-striped"
+                        )}}
+                        {{pass}}
+                      {{if True:}}
+                        {{=DIV(_class="space-12")}}
+                        {{=DIV(A('Modificar dados',_href=URL('default','pessoa',args=(pessoa.pessoa.slug,),vars=dict(action='editar')),_class="btn btn-primary pull-right"))}}
+                        {{pass}}
+                      {{pass}}
+				</div>
+			</div>
+		</div>
+    </div>
+</div>

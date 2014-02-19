@@ -1,0 +1,230 @@
+{{
+if pessoal:
+    url = URL('default','pessoa_artigos',args=(pessoa.pessoa.slug,))
+else:
+    url = URL('default','artigos_pessoal',args=(atividade.slug,))
+pass
+}}
+    
+
+{{ extend "default/pessoa_base.html" if pessoal else "atividades/atividade_base.html"}}
+
+{{
+from atividade_utils import atividade_areas_conhecimento
+#avaliacao_liberada = artigo_avaliacao_liberada(db,artigo,corrente=versao) 
+
+}}
+{{ #load filename }}
+{{ #load permissions }}
+
+{{ #block css }}
+  {{#block.super}}
+<!--  <style type="text/css" media="screen">-->
+<!--    .edit{-->
+<!--      padding:5px;-->
+<!--      text-decoration:underline;-->
+<!--    }-->
+<!--    .edit:hover{-->
+<!--      border: 1px solid black;-->
+<!--      background-color:#ffffff;-->
+<!--    }-->
+<!--    .block{-->
+<!--      display:block;-->
+<!--      float:left;-->
+<!--    }-->
+<!--    .editable-input > input{-->
+<!--      width: 70px;-->
+<!--    }-->
+<!--  </style>-->
+{{ #endblock }}
+
+{{ #block extra_script }}
+  {{#block.super}}
+<!--  <script type="text/javascript" src="{{# STATIC_URL }}js/jquery.jeditable.js"></script>-->
+
+<!--  <script>-->
+<!--    $(document).ready(function() {-->
+<!--      $("body").on('mouseenter',".edit",function(){-->
+<!--          var $this = $(this);-->
+<!--          if ($this.children('form').size() ){-->
+<!--            $this.addClass('block');-->
+<!--          }-->
+<!--      });-->
+<!--      $("body").on('mouseleave',".edit",function(){-->
+<!--          var $this = $(this);-->
+<!--          $this.removeClass('block');-->
+<!--      });-->
+<!--      $(".avaliador").editable("/shout/edit/", {-->
+<!--        data   : "{ {{ #for a in atividade.avaliadores.all }}'{{#a.id}}':'{{#a}}'{{# if not forloop.last }},{{#pass}}{{#endfor}} }",-->
+<!--        type   : "select",-->
+<!--        submit : '<button class="btn" type="submit">OK</button>',-->
+<!--        cancel : '<button class="btn" type="cancel">Cancelar</button>',-->
+<!--        cssclass : 'input-append'-->
+<!--      });-->
+<!--    });-->
+<!--  </script>-->
+{{ #endblock }}
+{{#block breadcrumbs }}
+  {{ #block.super }}
+<!--  <span class="divider">/</span>-->
+<!--  {{ #if artigo.id }}-->
+<!--    {{ #if avaliacao_liberada and artigo.editar }}-->
+<!--      <li><a href="{{# url editar_artigo atividade.slug artigo.id }}">corrigindo artigo</a></li>-->
+<!--    {{ #else: }}-->
+<!--      <li><a href="{{# url editar_artigo atividade.slug artigo.id }}">editando artigo</a></li>-->
+<!--    {{ #pass }}-->
+<!--  {{ #else: }}-->
+<!--    <li><a href="{{# url cadastrar_artigo atividade.slug }}">cadastrando artigo</a></li>-->
+  {{# pass }}
+{{# endblock }}
+
+<div class="well">
+  <h3>
+    {{ if versao.avaliacao_id and versao.avaliacao_id.liberar: }}
+      Resultado da avaliação
+    {{ else: }}
+      Resumo do artigo
+    {{ pass }}
+  </h3>
+  <dl class="dl-horizontal">
+    <dt>
+      Atividade
+      <dd>
+        <a href="{{ #url mostra_atividade atividade.slug }}">{{=atividade.nome}}</a>
+      </dd>
+    </dt>
+    {{ if atividade_areas_conhecimento(db,atividade): }}
+    <dt>
+      Área do Conhecimento
+      <dd>
+        {{artigo.area_conhecimento}}
+      </dd>
+    </dt>
+    {{ pass }}
+    {{ #ifhasperm "atividade_permission.manager_inscricao_atividade" request.user atividade }}
+    <dt>
+      Avaliador
+      <dd>
+        <span class="avaliador edit" id="artigo_{{=artigo.id}}_avaliador">{{=artigo.avaliador_id.pessoa_id.nome if artigo.avaliador_id else "Clique para selecionar um avaliador"}}</span>
+        <i class="icon-circle-info" data-trigger="hover" data-title="Avaliador" rel="popover" data-placement="right" data-content="Clique sobre o avaliador para selecionar outro."></i>
+      </dd>
+    </dt>
+    {{ #passhasperm }}
+  </dl>
+  {{ for i,versao in enumerate(db(db.versao.artigo_id==artigo.id).select(orderby=~db.versao.revisao)): }}
+    {{
+    prazo = versao_prazo(db,versao)
+    avaliacao = versao.avaliacao_id
+    }}
+    
+    <dl class="dl-horizontal">
+      <dt>
+        Situação:
+        <dd>
+          {{=versao_status(db,versao)}}
+        </dd>
+      </dt>
+      <dt>
+        Versão:
+        <dd>
+          {{=versao.revisao + 1}}
+        </dd>
+      </dt>
+      <dt>
+        Título:
+        <dd>
+          {{=versao.titulo}}
+        </dd>
+      </dt>
+      <dt>
+        Cadastrado em:
+        <dd>
+          {{=date2str(versao.data_envio)}}
+        </dd>
+      </dt>
+      <dt>
+        Autores:
+        <dd>
+          <ol>
+            {{ for a in db(db.autor.versao_id==versao.id).select(orderby=db.autor.ordem): }}
+              <li>{{=a.nome or a.pessoa_id.nome }}</li>
+            {{ pass }}
+          </ol>
+        </dd>
+      </dt>
+      {{ if avaliacao and versao.avaliacao_id.liberar: }}
+        <dt>
+          Parecer:
+          <dd>
+            {{=db.avaliacao.parecer.represent(avaliacao,avaliacao.parecer) or "Não avaliado" }}
+          </dd>
+        </dt>
+        <dt>
+          Comentários:
+          <dd>
+            {{=XML(avaliacao.comentarios) }}
+          </dd>
+        </dt>
+        <dt>
+          Data da Avaliação:
+          <dd>
+            {{ =date2str(avaliacao.data_avaliacao) }}
+          </dd>
+        </dt>
+      {{ pass }}
+      {{ if avaliacao and avaliacao.parecer != "ap": }}
+      <dt>
+        Prazo:
+        <dd{{ if avaliacao.liberar: }}{{ if not i: }} class="text-error"{{ pass }} {{ pass }}>
+          <strong>{{=date2str(prazo)}}</strong>
+        </dd>
+      </dt>
+      {{ pass }}
+      <dt>
+        Artigo:
+        <dd>
+          <a href="{{=URL('download',args=(versao.arquivo)) }}" class="btn{{ if not i: }} btn-primary{{ pass }}" title="Clique para baixar o artigo" rel="tooltip">
+            <i class="icon-download-alt{{ if not i: }}  icon-white{{ pass }}"></i>
+            {{=db.versao.arquivo.retrieve(versao.arquivo)[0]}}
+          </a>
+        </dd>
+      </dt>
+    </dl>
+    <hr>
+  {{ pass ##Endfor }} 
+  <form  method="POST">
+    <div class="form-actions">
+      <a class="btn" href="{{ if pessoal: }}{{=url }}{{ else: }}{{=url }}{{ pass }}">
+        Voltar
+      </a>
+      {{ #ifhasperm "atividade_permission.manager_inscricao_atividade" request.user atividade }}
+        <div class="btn-group pull-right">
+          <a class="btn btn-primary" href="{{#= url editar_artigo_comissao atividade.slug artigo.id }}">
+            <i class="icon-edit icon-white"></i>
+            Editar
+          </a>
+          <button type="submit" name="submit" value="Enviar" class="btn btn-primary">
+            Enviar
+          </button>
+        </div>
+      {{ #else: }}
+<!--        <div class="btn-group pull-right">-->
+<!--          {{# if versao.editar }}-->
+<!--            <a class="btn btn-primary" href="{{ #if pessoal: }}{{# url editar_artigo_pessoa atividade.slug artigo.id }}{{ #else: }}{{ #url editar_artigo atividade.slug artigo.id }}{{ #pass }}">-->
+<!--              <i class="icon-edit icon-white"></i>-->
+<!--              Editar-->
+<!--            </a>-->
+<!--            <button type="submit" name="submit" value="Enviar" class="btn btn-primary">-->
+<!--              Enviar-->
+<!--            </button>-->
+<!--          {{# else: }}-->
+<!--            <a class="btn btn-primary" href="{{ #url editar_artigo_aprovado atividade.slug artigo.id }}">-->
+<!--              <i class="icon-edit icon-white"></i>-->
+<!--              Editar-->
+<!--            </a>-->
+<!--          {{# pass }}-->
+<!--        </div>-->
+      {{ #passhasperm }}
+    </div>
+  </form>
+</div>

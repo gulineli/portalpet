@@ -1,0 +1,3 @@
+# coding: utf8
+# tente algo como
+def index(): return dict(message="hello from grupos.py")

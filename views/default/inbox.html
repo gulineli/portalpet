@@ -1,0 +1,660 @@
+{{
+paginate = response.paginate
+response.paginate=''
+}}
+
+{{extend 'default/pessoa_base.html' }}
+
+{{
+def num_mensagens_relacionadas(m):
+    n = len(db(((db.mensagem.master==mensagem.id) | 
+                (db.mensagem.id==mensagem.id)) & \
+                (((db.mensagem_destinatarios.mensagem_id==db.mensagem.id) & 
+                (db.mensagem_destinatarios.pessoa_id==pessoa.pessoa.id)) | 
+                (db.mensagem.de==pessoa.pessoa.id) )  ).select(db.mensagem.ALL,distinct=True))
+    return "(%s)" %n if n>1 else ''
+pass
+}}
+<div class="tabbable">
+	{{include 'default/message_bar.html'}}
+
+	<div class="tab-content no-border no-padding">
+		<div class="tab-pane in active">
+			<div class="message-container">
+				<div id="id-message-list-navbar" class="message-navbar align-center clearfix">
+					<div class="message-bar">
+						<div class="message-infobar" id="id-message-infobar">
+							<span class="blue bigger-150">Entrada</span>
+							<span class="grey bigger-110">({{=T("%s %%{unreaded}", unreaded) }})</span>
+						</div>
+
+						<div class="message-toolbar hide">
+							<div class="inline position-relative align-left">
+								<a href="#" class="btn-message btn btn-xs dropdown-toggle" data-toggle="dropdown">
+									<span class="bigger-110">Ações</span>
+
+									<i class="icon-caret-down icon-on-right"></i>
+								</a>
+
+								<ul class="dropdown-menu dropdown-lighter dropdown-caret dropdown-125">
+									<li>
+										<a href="#">
+											<i class="icon-mail-reply blue"></i>
+											&nbsp; Responder
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-mail-forward green"></i>
+											&nbsp; Encaminhar
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-folder-open orange"></i>
+											&nbsp; Arquivar
+										</a>
+									</li>
+
+									<li class="divider"></li>
+
+									<li>
+										<a href="#">
+											<i class="icon-eye-open blue"></i>
+											&nbsp; Marcar como lida
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-eye-close green"></i>
+											&nbsp; Marcar como não lida
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-flag-alt red"></i>
+											&nbsp; Flag
+										</a>
+									</li>
+
+									<li class="divider"></li>
+
+									<li>
+										<a href="#">
+											<i class="icon-trash red bigger-110"></i>
+											&nbsp; Apagar
+										</a>
+									</li>
+								</ul>
+							</div>
+
+							<div class="inline position-relative align-left">
+								<a href="#" class="btn-message btn btn-xs dropdown-toggle" data-toggle="dropdown">
+									<i class="icon-folder-close-alt bigger-110"></i>
+									<span class="bigger-110">Mover para</span>
+
+									<i class="icon-caret-down icon-on-right"></i>
+								</a>
+
+								<ul class="dropdown-menu dropdown-lighter dropdown-caret dropdown-125">
+									<li>
+										<a href="#">
+											<i class="icon-stop pink2"></i>
+											&nbsp; Tag#1
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-stop blue"></i>
+											&nbsp; Family
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-stop green"></i>
+											&nbsp; Friends
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-stop grey"></i>
+											&nbsp; Work
+										</a>
+									</li>
+								</ul>
+							</div>
+
+							<a href="#" class="btn btn-xs btn-message">
+								<i class="icon-trash bigger-125"></i>
+								<span class="bigger-110">Apagar</span>
+							</a>
+						</div>
+					</div>
+
+					<div>
+						<div class="messagebar-item-left">
+							<label class="inline middle">
+								<input type="checkbox" id="id-toggle-all" class="ace" />
+								<span class="lbl"></span>
+							</label>
+
+							&nbsp;
+							<div class="inline position-relative">
+								<a href="#" data-toggle="dropdown" class="dropdown-toggle">
+									<i class="icon-caret-down bigger-125 middle"></i>
+								</a>
+
+								<ul class="dropdown-menu dropdown-lighter dropdown-100">
+									<li>
+										<a id="id-select-message-all" href="#">Todas</a>
+									</li>
+
+									<li>
+										<a id="id-select-message-none" href="#">Nenhuma</a>
+									</li>
+
+									<li class="divider"></li>
+
+									<li>
+										<a id="id-select-message-unread" href="#">Não Lidas</a>
+									</li>
+
+									<li>
+										<a id="id-select-message-read" href="#">Lidas</a>
+									</li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="messagebar-item-right">
+							<div class="inline position-relative">
+								<a href="#" data-toggle="dropdown" class="dropdown-toggle">
+									Ordenar &nbsp;
+									<i class="icon-caret-down bigger-125"></i>
+								</a>
+
+								<ul class="dropdown-menu dropdown-lighter pull-right dropdown-100">
+							    {{ o = request.vars.get('o','hora') }}
+									<li>
+										<a href="{{=URL(request.controller,request.function,vars=dict(o = 'hora'))}}">
+										    <i class="icon-ok {{if o == 'hora':}}green{{else:}}invisible{{pass}}"></i>
+											Data
+										</a>
+									</li>
+
+									<li>
+										<a href="{{=URL(request.controller,request.function,vars=dict(o = 'de'))}}">
+											<i class="icon-ok {{if o == 'de':}}green{{else:}}invisible{{pass}}"></i>
+											Remetente
+										</a>
+									</li>
+
+									<li>
+										<a href="{{=URL(request.controller,request.function,vars=dict(o = 'assunto'))}}">
+											<i class="icon-ok {{if o == 'assunto':}}green{{else:}}invisible{{pass}}"></i>
+											Assunto
+										</a>
+									</li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="nav-search minimized">
+							<form class="form-search">
+								<span class="input-icon">
+									<input type="text" autocomplete="off" class="input-small nav-search-input" placeholder="Search inbox ..." />
+									<i class="icon-search nav-search-icon"></i>
+								</span>
+							</form>
+						</div>
+					</div>
+				</div>
+
+				<div id="id-message-item-navbar" class="hide message-navbar align-center clearfix">
+					<div class="message-bar">
+						<div class="message-toolbar">
+							<div class="inline position-relative align-left">
+								<a href="#" class="btn-message btn btn-xs dropdown-toggle" data-toggle="dropdown">
+									<span class="bigger-110">Action</span>
+
+									<i class="icon-caret-down icon-on-right"></i>
+								</a>
+
+								<ul class="dropdown-menu dropdown-lighter dropdown-caret dropdown-125">
+									<li>
+										<a href="#">
+											<i class="icon-mail-reply blue"></i>
+											&nbsp; Reply
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-mail-forward green"></i>
+											&nbsp; Forward
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-folder-open orange"></i>
+											&nbsp; Archive
+										</a>
+									</li>
+
+									<li class="divider"></li>
+
+									<li>
+										<a href="#">
+											<i class="icon-eye-open blue"></i>
+											&nbsp; Mark as read
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-eye-close green"></i>
+											&nbsp; Mark unread
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-flag-alt red"></i>
+											&nbsp; Flag
+										</a>
+									</li>
+
+									<li class="divider"></li>
+
+									<li>
+										<a href="#">
+											<i class="icon-trash red bigger-110"></i>
+											&nbsp; Delete
+										</a>
+									</li>
+								</ul>
+							</div>
+
+							<div class="inline position-relative align-left">
+								<a href="#" class="btn-message btn btn-xs dropdown-toggle" data-toggle="dropdown">
+									<i class="icon-folder-close-alt bigger-110"></i>
+									<span class="bigger-110">Move to</span>
+
+									<i class="icon-caret-down icon-on-right"></i>
+								</a>
+
+								<ul class="dropdown-menu dropdown-lighter dropdown-caret dropdown-125">
+									<li>
+										<a href="#">
+											<i class="icon-stop pink2"></i>
+											&nbsp; Tag#1
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-stop blue"></i>
+											&nbsp; Family
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-stop green"></i>
+											&nbsp; Friends
+										</a>
+									</li>
+
+									<li>
+										<a href="#">
+											<i class="icon-stop grey"></i>
+											&nbsp; Work
+										</a>
+									</li>
+								</ul>
+							</div>
+
+							<a href="#" class="btn btn-xs btn-message">
+								<i class="icon-trash bigger-125"></i>
+								<span class="bigger-110">Delete</span>
+							</a>
+						</div>
+					</div>
+
+					<div>
+						<div class="messagebar-item-left">
+							<a href="#" class="btn-back-message-list">
+								<i class="icon-arrow-left blue bigger-110 middle"></i>
+								<b class="bigger-110 middle">Back</b>
+							</a>
+						</div>
+
+						<div class="messagebar-item-right">
+							<i class="icon-time bigger-110 orange middle"></i>
+							<span class="time grey">Today, 7:15 pm</span>
+						</div>
+					</div>
+				</div>
+
+				<div id="id-message-new-navbar" class="hide message-navbar align-center clearfix">
+					<div class="message-bar">
+						<div class="message-toolbar">
+							<a href="#" class="btn btn-xs btn-message">
+								<i class="icon-save bigger-125"></i>
+								<span class="bigger-110">Save Draft</span>
+							</a>
+
+							<a href="#" class="btn btn-xs btn-message">
+								<i class="icon-remove bigger-125"></i>
+								<span class="bigger-110">Discard</span>
+							</a>
+						</div>
+					</div>
+
+					<div class="message-item-bar">
+						<div class="messagebar-item-left">
+							<a href="#" class="btn-back-message-list no-hover-underline">
+								<i class="icon-arrow-left blue bigger-110 middle"></i>
+								<b class="middle bigger-110">Back</b>
+							</a>
+						</div>
+
+						<div class="messagebar-item-right">
+							<span class="inline btn-send-message">
+								<button type="button" class="btn btn-sm btn-primary no-border">
+									<span class="bigger-110">Send</span>
+
+									<i class="icon-arrow-right icon-on-right"></i>
+								</button>
+							</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="message-list-container">
+					<div class="message-list" id="message-list">
+					    {{for mensagem in mensagens:}}
+						<div class="message-item{{='' if mensagem.readed() else ' message-unread'}}" data-message="{{=mensagem.hash}}">
+							<label class="inline">
+								<input type="checkbox" class="ace" />
+								<span class="lbl"></span>
+							</label>
+
+							<i class="message-star icon-star-empty light-grey"></i>
+
+							<span class="sender" title="John Doe">
+								{{=truncate_words(mensagem.de.nome,2)}}
+								<span class="light-grey">{{=num_mensagens_relacionadas(mensagem)}}</span>
+							</span>
+							<span class="time">{{=cooldate(mensagem.hora)}}</span>
+
+<!--							<span class="attachment">-->
+<!--								<i class="icon-paper-clip"></i>-->
+<!--							</span>-->
+
+							<span class="summary">
+								<span class="badge badge-pink mail-tag"></span>
+								<span class="text">
+									{{=mensagem.assunto}}
+								</span>
+							</span>
+							<div class="message-content hide"></div>
+						</div>
+						{{pass}}
+					</div>
+				</div><!-- /.message-list-container -->
+
+                <div id="id-message-form" class="hide message-form  col-xs-12">
+			    </div>
+
+				<div class="message-footer clearfix">
+					<div class="pull-left"> {{=T('%s %%{Mensagem}',response.num_items)}} total </div>
+
+					<div class="pull-right">
+					    {{=paginate}}
+					</div>
+				</div>
+			</div><!-- /.message-container -->
+		</div><!-- /.tab-pane -->
+	</div><!-- /.tab-content -->
+</div><!-- /.tabbable -->
+
+{{block script}}
+<script type="text/javascript">
+	jQuery(function($){
+
+		//basic initializations
+		$('.message-list .message-item input[type=checkbox]').removeAttr('checked');
+		$('.message-list').delegate('.message-item input[type=checkbox]' , 'click', function() {
+			$(this).closest('.message-item').toggleClass('selected');
+			if(this.checked) Inbox.display_bar(1);//display action toolbar when a message is selected
+			else {
+				Inbox.display_bar($('.message-list input[type=checkbox]:checked').length);
+				//determine number of selected messages and display/hide action toolbar accordingly
+			}
+		});
+
+
+		//check/uncheck all messages
+		$('#id-toggle-all').removeAttr('checked').on('click', function(){
+			if(this.checked) {
+				Inbox.select_all();
+			} else Inbox.select_none();
+		});
+
+		//select all
+		$('#id-select-message-all').on('click', function(e) {
+			e.preventDefault();
+			Inbox.select_all();
+		});
+
+		//select none
+		$('#id-select-message-none').on('click', function(e) {
+			e.preventDefault();
+			Inbox.select_none();
+		});
+
+		//select read
+		$('#id-select-message-read').on('click', function(e) {
+			e.preventDefault();
+			Inbox.select_read();
+		});
+
+		//select unread
+		$('#id-select-message-unread').on('click', function(e) {
+			e.preventDefault();
+			Inbox.select_unread();
+		});
+
+		//display second message right inside the message list
+		$('.message-list .message-item .text').on('click', function(){
+			var message = $(this).closest('.message-item');
+
+			//if message is open, then close it
+			if(message.hasClass('message-inline-open')) {
+				message.removeClass('message-inline-open').find('.message-content:last').addClass('hide');
+				return;
+			}
+
+			$('.message-container').find('.message-loading-overlay').remove();
+			message.addClass('message-inline-open')
+
+			$.ajax({
+                type: "POST",
+                url: "{{=URL('default','message')}}",
+                data: {message : message.attr('data-message') },
+                beforeSend: function(XMLHttpRequest){
+                    $('.message-container').append('<div class="message-loading-overlay"><i class="icon-spin icon-spinner orange2 bigger-160"></i></div>');
+                },
+                success: function (msg) {
+                    $('.message-loading-overlay').remove();
+                    var content = message.find('.message-content:last').html( msg );
+                    content.removeClass('hide');
+                  }
+              });
+		});
+
+
+		//back to message list
+		$('.btn-back-message-list').on('click', function(e) {
+			e.preventDefault();
+			Inbox.show_list();
+			$('#inbox-tabs a[data-target="inbox"]').tab('show');
+		});
+
+		var Inbox = {
+			//displays a toolbar according to the number of selected messages
+			display_bar : function (count) {
+				if(count == 0) {
+					$('#id-toggle-all').removeAttr('checked');
+					$('#id-message-list-navbar .message-toolbar').addClass('hide');
+					$('#id-message-list-navbar .message-infobar').removeClass('hide');
+				}
+				else {
+					$('#id-message-list-navbar .message-infobar').addClass('hide');
+					$('#id-message-list-navbar .message-toolbar').removeClass('hide');
+				}
+			}
+			,
+			select_all : function() {
+				var count = 0;
+				$('.message-item input[type=checkbox]').each(function(){
+					this.checked = true;
+					$(this).closest('.message-item').addClass('selected');
+					count++;
+				});
+
+				$('#id-toggle-all').get(0).checked = true;
+
+				Inbox.display_bar(count);
+			}
+			,
+			select_none : function() {
+				$('.message-item input[type=checkbox]').removeAttr('checked').closest('.message-item').removeClass('selected');
+				$('#id-toggle-all').get(0).checked = false;
+
+				Inbox.display_bar(0);
+			}
+			,
+			select_read : function() {
+				$('.message-unread input[type=checkbox]').removeAttr('checked').closest('.message-item').removeClass('selected');
+
+				var count = 0;
+				$('.message-item:not(.message-unread) input[type=checkbox]').each(function(){
+					this.checked = true;
+					$(this).closest('.message-item').addClass('selected');
+					count++;
+				});
+				Inbox.display_bar(count);
+			}
+			,
+			select_unread : function() {
+				$('.message-item:not(.message-unread) input[type=checkbox]').removeAttr('checked').closest('.message-item').removeClass('selected');
+
+				var count = 0;
+				$('.message-unread input[type=checkbox]').each(function(){
+					this.checked = true;
+					$(this).closest('.message-item').addClass('selected');
+					count++;
+				});
+
+				Inbox.display_bar(count);
+			}
+		}
+
+		//show message list (back from writing mail or reading a message)
+		Inbox.show_list = function() {
+			$('.message-navbar').addClass('hide');
+			$('#id-message-list-navbar').removeClass('hide');
+
+			$('.message-footer').addClass('hide');
+			$('.message-footer:not(.message-footer-style2)').removeClass('hide');
+
+			$('.message-list').removeClass('hide').next().addClass('hide');
+			//hide the message item / new message window and go back to list
+		}
+
+		var form_initialized = false;
+		function initialize_form() {
+			if(form_initialized) return;
+			form_initialized = true;
+
+			//intialize wysiwyg editor
+			$('.message-form .wysiwyg-editor').ace_wysiwyg({
+				toolbar:
+				[
+					'bold',
+					'italic',
+					'strikethrough',
+					'underline',
+					null,
+					'justifyleft',
+					'justifycenter',
+					'justifyright',
+					null,
+					'createLink',
+					'unlink',
+					null,
+					'undo',
+					'redo'
+				]
+			}).prev().addClass('wysiwyg-style1');
+
+			//file input
+			$('.message-form input[type=file]').ace_file_input()
+			//and the wrap it inside .span7 for better display, perhaps
+			.closest('.ace-file-input').addClass('width-90 inline').wrap('<div class="row file-input-container"><div class="col-sm-7"></div></div>');
+
+			//the button to add a new file input
+			$('#id-add-attachment').on('click', function(){
+				var file = $('<input type="file" name="attachment[]" />').appendTo('#form-attachments');
+				file.ace_file_input();
+				file.closest('.ace-file-input').addClass('width-90 inline').wrap('<div class="row file-input-container"><div class="col-sm-7"></div></div>')
+				.parent(/*.span7*/).append('<div class="action-buttons pull-right col-xs-1">\
+					<a href="#" data-action="delete" class="middle">\
+						<i class="icon-trash red bigger-130 middle"></i>\
+					</a>\
+				</div>').find('a[data-action=delete]').on('click', function(e){
+					//the button that removes the newly inserted file input
+					e.preventDefault();
+					$(this).closest('.row').hide(300, function(){
+						$(this).remove();
+					});
+				});
+			});
+		}//initialize_form
+
+
+		//turn the recipient field into a tag input field!
+		/**
+		var tag_input = $('#form-field-recipient');
+		if(! ( /msie\s*(8|7|6)/.test(navigator.userAgent.toLowerCase())) )
+			tag_input.tag({placeholder:tag_input.attr('placeholder')});
+
+
+		//and add form reset functionality
+		$('.message-form button[type=reset]').on('click', function(){
+			$('.message-form .message-body').empty();
+
+			$('.message-form .ace-file-input:not(:first-child)').remove();
+			$('.message-form input[type=file]').ace_file_input('reset_input');
+
+
+			var val = tag_input.data('value');
+			tag_input.parent().find('.tag').remove();
+			$(val.split(',')).each(function(k,v){
+				tag_input.before('<span class="tag">'+v+'<button class="close" type="button">&times;</button></span>');
+			});
+		});
+		*/
+	});
+</script>
+{{end}}

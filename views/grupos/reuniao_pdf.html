@@ -1,0 +1,120 @@
+<html>
+<head>
+  <style type="text/css">
+    body{
+      font-size:10pt;
+      line-height:12pt;
+      text-align:justify;
+    }
+    p{
+      line-height:14pt;
+      font-size:10pt;
+      margin:0;
+    }
+    h1,h2,h3{
+      margin:2pt 0;
+    }
+    h1{
+      font-size:18pt;
+      line-height:20pt;
+    }
+    h2{
+      font-size:16pt;
+      line-height:18pt;
+    }
+    h3{
+      font-size:14pt;
+      line-height:16pt;
+    }
+    *{
+      -pdf-keep-with-next: false;
+    }
+    @page {
+      margin: 2cm 1.5cm 2cm 2.5cm;
+      @frame header {
+        -pdf-frame-content: headerContent;
+        top: 1cm;
+        margin-left: 1cm;
+        margin-right: 1cm;
+        height: 1cm;
+      }
+      @frame footer1 {
+        -pdf-frame-content: footerContent1;
+        bottom: 0.8cm;
+        margin-left: 2.5cm;
+        margin-right: 5cm;
+        height: 1cm;
+      }
+      @frame footer2 {
+        -pdf-frame-content: footerContent2;
+        bottom: 0.8cm;
+        margin-left: 15cm;
+        margin-right: 1.5cm;
+        height: 1cm;
+      }
+    }
+  </style>
+</head>
+<body>
+  {{
+    from utils import datediff_T,regroup,datetime2str,date2str
+    from reuniao_utils import topico_status
+    topico_set = reuniao.topicos_set()
+    topicos = topico_set.select(db.topico.ALL)
+  }}
+
+  <div id="headerContent">
+    <div style="width:100%;text-align:center;font-size:10pt;">
+      {{=grupo.nome}} em {{=datetime2str(request.now) }}
+    </div>
+  </div>
+
+  <h1 style="text-align:center;text-decoration:underline;">Reunião nº {{=reuniao.number()}}/{{=reuniao.inicio.year}}</h1>
+  <br>
+  <h3>Pauta: {{=reuniao.pauta_id.nome}}</h3>
+  <h3>Início: {{=datetime2str(reuniao.inicio) }}</h3>
+  <h3>Duração: {{=datediff_T((reuniao.termino) - reuniao.inicio) }}</h3>
+  <h3>Secretário: {{=reuniao.secretario_id.nome}}</h3>
+  <br>
+  {{ for topico_by_assunto in regroup(topicos,db.topico.assunto_id): }}
+    {{ topicos_in_assunto_count = len(topico_by_assunto.list) }}
+    <table border="1" cellspacing="5" cellpadding="10">
+      <tr>
+        <td>
+          <h3>{{=db.assunto(topico_by_assunto.grouper).assunto or XML("&lt;Sem assunto&gt;")}} ( {{=T("%s %%{tópico}",topicos_in_assunto_count)}} )</h3>
+        </td>
+      </tr>
+      {{ for topico in topico_by_assunto.list: }}
+        {{status = topico_status(topico) }}
+        <tr>
+          <td>
+            <p style="text-align:right;">
+              <strong style="">
+                {{ if status: }}
+                ( {{=status}} )
+                {{ pass }}
+                <em>{{=date2str(topico.data)}}</em>
+              </strong>
+            </p>
+            {{ include "grupos/topico_descricao.html" }}
+          </td>
+        </tr>
+      {{pass}}
+    </table><br>
+  {{pass}}
+
+  {{ausentes_count = reuniao.ausentes_set().count()}}
+  <h3>Ausentes {{ if ausentes_count: }}({{ausentes_count}}){{pass}}</h3>
+  <div>
+    {{=UL(*([p.nome for p in reuniao.ausentes_set().select(db.pessoa.ALL)] or ['Nenhum',]) ) }}
+  </div>
+
+  <div id="footerContent1">
+    Reunião nº {{=reuniao.number()}}/{{=reuniao.inicio.year}} [Portal PET - {{=datetime2str(request.now) }} ]
+  </div>
+
+  <div id="footerContent2" style="text-align:right;">
+    <pdf:pagenumber />
+  </div>
+</body>
+</html>
