@@ -1,6 +1,7 @@
 DEVELOPMENT/*
 errors/*
 sessions/*
+databases/*
 .hg*
 .pythonhistory*
 uploads/*
