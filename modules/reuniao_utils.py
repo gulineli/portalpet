@@ -17,7 +17,7 @@ def reuniao_number(db,reuniao):
 
 
 def reuniao_create_arquivo(db,request,response,reuniao):
-    from utils import write_pdf
+    from myutils import write_pdf
     grupo = reuniao.grupo_id
     pagesize = 'A4'
     html = response.render('grupos/reuniao_pdf.html', locals() )

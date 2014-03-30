@@ -1,7 +1,7 @@
 {{
 import itertools
 import datetime
-from atividade_utils import atividade_termino,num_inscritos,atividade_inicio
+from atividade_utils import atividade_termino,num_inscritos_,atividade_inicio
 
 inscricoes_encerradas = False
 termino = atividade_termino(db,a).date()
@@ -9,7 +9,7 @@ inicio = atividade_inicio(db,a).date()
 today = request.now.date()
 
 finalizada = termino < today
-n_inscritos =  ('a.confirmados.count' if finalizada and a.confirmacao else num_inscritos(db,a)) or 0
+n_inscritos =  ('a.confirmados.count' if finalizada and a.confirmacao else num_inscritos_(db,a)) or 0
 
 delta = db(db.delta_inscricao.atividade_id==a.id).select(
             db.delta_inscricao.ALL,orderby=db.delta_inscricao.data)
@@ -50,7 +50,6 @@ dates = list(itertools.islice(date_generator,diff) )
 
 deltas = []
 for date in dates:
-    print len(delta),delta,999999,date
     r = delta.find(lambda row: row.data==date).first()
     if r:
         deltas.append(r.n_inscricao)
@@ -72,7 +71,7 @@ pass
 </div>
 {{if not inscricoes_encerradas and len(deltas) > 1:}}
 <div class="badge badge-success">
-    {{=(deltas[-1]*100/(delta[-2])) if delta[-2] else '1000'}} %
+    {{=(deltas[-1]*100/(deltas[-2])) if (len(deltas)>1 and deltas[-2]) else '1000'}} %
     <i class="icon-arrow-up"></i>
 </div>
 {{pass}}

@@ -1,4 +1,4 @@
-# coding: utf8
+# -*- coding: utf-8 -*-
 {
 ' %s %%{minuto}': ' %s %%{minuto}',
 ' e %s %%{segundo}': ' e %s %%{segundo}',
@@ -104,8 +104,10 @@
 'Egressos': 'Egressos',
 'Email and SMS': 'Email and SMS',
 'enter a number between %(min)g and %(max)g': 'enter a number between %(min)g and %(max)g',
+'Enter a number between %(min)g and %(max)g': 'Enter a number between %(min)g and %(max)g',
 'enter a valid email address': 'enter a valid email address',
 'enter a value': 'enter a value',
+'Enter an integer between %(min)g and %(max)g': 'Enter an integer between %(min)g and %(max)g',
 'enter an integer between %(min)g and %(max)g': 'enter an integer between %(min)g and %(max)g',
 'enter date and time as %(format)s': 'enter date and time as %(format)s',
 'enter date as %(format)s': 'enter date as %(format)s',
@@ -115,6 +117,7 @@
 'Falar com os Inscritos': 'Falar com os Inscritos',
 'FAQ': 'FAQ',
 'file': 'file',
+'file ## download': 'file ',
 'Financeiro': 'Financeiro',
 'First name': 'First name',
 'Forgot username?': 'Forgot username?',

@@ -17,10 +17,10 @@
                     )._select(db.atividade.id)
     
   atividades_inscritas = db((db.inscrito.atividade_id.belongs(subatividades_id) & \
-                            (db.inscrito.pessoa_id==pessoa.pessoa.id) & \
+                            (db.inscrito.pessoa_id==pessoa.pessoa.id if pessoa else 0) & \
                             (db.atividade.id==db.inscrito.atividade_id))).select(db.atividade.ALL,groupby=db.atividade.id)
 
-  ativis_disponiveis = atividades_disponiveis(db,atividade_inscricao,pessoa.pessoa)[0]
+  ativis_disponiveis = atividades_disponiveis(db,atividade_inscricao,pessoa.pessoa if pessoa else None)[0]
   subatividades = db(db.atividade_subatividades.mestra_id==atividade_inscricao.id)._select(db.atividade_subatividades.subatividade_id)
   ativis_disponiveis = ativis_disponiveis.find(lambda row: row.id.belongs(subatividades) )
   
@@ -32,6 +32,26 @@
 {{ block script }}
 {{super}}
 <script type="text/javascript" src="js/jquery.colorbox-min.js"></script>
+
+{{if tipo=="administrador" or 1:}}
+<script type="text/javascript" language="javascript" charset="utf-8">
+$(document).ready(function(){
+  $('#inscrito_pessoa_text').focusin(function(){
+    $(this).val("").trigger('keyup');
+  })
+  var $pessoa = $('#inscrito_pessoa');
+  $pessoa.change(function(){
+    if ($pessoa.val()){
+      $("#inscrito_form").trigger('submit');
+    }
+    else{
+      $('.hide_this').hide();
+    }
+  });
+});
+</script>
+{{pass}}
+
 
 {{ if pessoa and atividade.tipo == "ev" and not insc_grupo: }}
   <script type="text/javascript" language="javascript" charset="utf-8">
@@ -151,14 +171,13 @@
 {{ pass }}
 {{ end }}
 <h2>Inscrição na atividade {{atividade_inscricao.nome}}</h2>
-<script type="text/javascript" src="js/funcs.js"></script>
 
 {{ if show_resumo: }}
 
   {{include 'atividades/resumo_inscricao.html'}}
 
 {{ else: }}
-  <form method="POST">
+  <form method="POST" id="inscrito_form">
     <input type="hidden" name="pago" value=""  />
     
     {{include 'atividades/informacoes_importantes.html'}}
@@ -171,10 +190,12 @@
         <div class="control-group">
           <label class="control-label" for="{{#form.atividade.id_for_label}}">
             <i class="icon-sampler"></i>
+            <i class="icon-circle-info" title="Digite o nome das atividades que gostaria de inscrever esta pessoa" rel="tooltip"></i>
+            
             Selecione a atividade que deseja proceder a inscrição:
           </label>
           <div class="controls">
-            {{#form.atividade}}
+            <input type="text" name="subatividades_text" id="id_subatividades_text" autocomplete="off" value=""/>
           </div>
         </div>
       {{ else: }}
@@ -192,6 +213,29 @@
       <br>
     {{ pass }}
     <!--Fim inscricao de grupo-->
+    
+    
+    {{if tipo=="administrador" or 1:}}
+      {{from widgets import Autocomplete
+        inscrito_field = Field('pessoa')
+        pessoa_widget = Autocomplete(URL('atividades','get_pessoas_inscricao',args=(atividade.id)),show_result=False,tablename='inscrito').widget(inscrito_field,pessoa)
+      }}
+      <ul class="nav nav-tabs">
+        <li>
+          <a href="{% url insc_atividade atividade.slug %}">Inscrição de Pessoas</a>
+        </li>
+        <li>
+          <a href="{% url insc_grupo atividade.slug %}">Inscrição de Grupos</a>
+        </li>
+      </ul>
+      <div class="control-group">
+        <label class="control-label" for="pessoa_id">
+          Pessoa *
+          <i class="icon-circle-info" title="Digite o nome das atividades que gostaria de inscrever esta pessoa" rel="tooltip"></i>
+        </label>
+        {{=pessoa_widget}}
+      </div>
+    {{pass}}
     
     
     {{ if atividade.tipo == 'ev' and insc_ativ: }}
@@ -247,16 +291,17 @@
       {{ if valor_total: }}
         <p>
           <u><i class="icon-usd"></i> Valor total a pagar: <b>R$: {{=valor_total}}</b></u>
-          {{ if atividade_inscricao and atividade_inscricao.forma_pagamento == "bo": }}
-            [
+          [{{ if atividade_inscricao and atividade_pagamento and atividade_pagamento.forma_pagamento == "bo": }}
               <i class="icon-barcode"></i> Boleto bancário
+          {{else:}}
               No ato da inscrição
-            ]
-          {{ pass }}
+          {{ pass }}]
         </p>
       {{ pass }}
       <hr>
+      
       {{ include "atividades/atividades_inscritas.html" }}
+      
     {{ pass }}
     <!--FIM-Resumo da inscrição-->
     

@@ -1,7 +1,83 @@
 {{extend 'atividades/atividade_base.html' }}
 
 {{if action in ('criar','editar'):}}
-  {{=form}}
+  <div class="space"></div>
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="tabbable">
+        <ul class="nav nav-tabs">
+          <li {{ if e == '1': }}class="active"{{pass}}>
+            <a href="{{=URL('atividades','atividade',args=atividade.slug,vars=dict(action='editar' if atividade else 'criar',estagio='1'))}}">
+              <i class="green icon-book bigger-125"></i>Básico
+            </a>
+          </li>
+          <li class="{{ if e == '2': }}active{{ pass }}{{ if not atividade: }} disabled{{ pass }}">
+            <a href="{{=URL('atividades','atividade',args=atividade.slug,vars=dict(action='editar' if atividade else 'criar',estagio='2'))}}" {{ if not atividade: }} class="disabled"{{ pass }}>
+              <i class="purple icon-cog bigger-125"></i>
+              Descrição
+            </a>
+          </li>
+          <li class="{{ if e == '3': }}active{{ pass }}{{ if not atividade: }} disabled{{ pass }}">
+            <a href="{{=URL('atividades','atividade',args=atividade.slug,vars=dict(action='editar' if atividade else 'criar',estagio='3'))}}"{{ if not atividade: }} class="disabled"{{ pass }}>
+              <i class="purple icon-cog bigger-125"></i>
+              Inscrições
+            </a>
+          </li>
+          <li class="{{ if e == '4': }}active{{ pass }}{{ if not atividade: }} disabled{{ pass }}">
+            <a href="{{=URL('atividades','atividade',args=atividade.slug,vars=dict(action='editar' if atividade else 'criar',estagio='4'))}}"{{ if not atividade: }} class="disabled"{{ pass }}>
+              <i class="purple icon-cog bigger-125"></i>
+              Frequência/Certificado
+            </a>
+          </li>
+          <li class="{{ if e == '5': }}active{{ pass }}{{ if not atividade: }} disabled{{ pass }}">
+            <a href="{{=URL('atividades','atividade',args=atividade.slug,vars=dict(action='editar' if atividade else 'criar',estagio='5'))}}"{{ if not atividade: }} class="disabled"{{ pass }}>
+              <i class="purple icon-cog bigger-125"></i>
+              Artigos
+            </a>
+          </li>
+          <li class="{{ if e == '6': }}active{{ pass }}{{ if not atividade: }} disabled{{ pass }}">
+            <a href="{{=URL('atividades','atividade',args=atividade.slug,vars=dict(action='editar' if atividade else 'criar',estagio='6'))}}"{{ if not atividade: }} class="disabled"{{ pass }}>
+              <i class="purple icon-cog bigger-125"></i>
+              Financeiro
+            </a>
+          </li>
+        </ul>
+	      <div class="tab-content">
+		      <div class="tab-pane in active">
+		        <div class="alert alert-info">
+              <button class="close" data-dismiss="alert" type="button">
+                <i class="icon-remove"></i>
+              </button>
+              {{=estagio['mensagem']}}
+              <br>
+            </div>
+	          {{button='<div class="form-actions no-padding-bottom no-margin-bottom">'}}
+            {{ if e == '6':}}
+            {{
+              button+='''
+              <button class="btn" name="btn" value="Cancelar">Cancelar</button>
+              <button class="btn btn-primary pull-right" name="btn" value="Salvar">Salvar</button>'''}}
+            {{ else: }}
+            {{
+              button+='''
+              <button class="btn" name="btn" value="Cancelar">Cancelar</button>
+              <div class="btn-group pull-right">
+                <button class="btn btn-primary" name="btn" value="Sair">Salvar e sair</button>
+                <button class="btn btn-primary" name="btn" value="Próximo">
+                  Salvar e seguinte
+                  <i class="icon-thin-right-arrow icon-white"></i>
+                </button>
+              </div>'''
+            }}
+            {{ pass }}
+	          {{button+='</div>'
+	            form[0].append(XML(button))}}
+            {{=form}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 {{else:}}
   {{#=TABLE(*render_fields(atividade,db,exclude=['foto','miniatura','slug'],tables=['atividade']),_class="table table-striped table-bordered")}}
   {{if atividade.descricao:}}

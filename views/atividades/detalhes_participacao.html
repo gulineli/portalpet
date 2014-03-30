@@ -4,7 +4,7 @@
 {{
 import itertools
 import datetime
-from atividade_utils import (atividade_termino,num_inscritos,atividade_inicio,certifica_inscrito,
+from atividade_utils import (atividade_termino,num_inscritos_,atividade_inicio,certifica_inscrito,
                              num_presenca,listas_feitas,ordem_inscricao,frequencia_participacao)
 
 listas_finalizadas = listas_feitas(db,atividade) 
@@ -14,7 +14,7 @@ inicio = atividade_inicio(db,atividade).date()
 today = request.now.date()
 
 finalizada = termino < today
-n_inscritos =  ('atividade.confirmados.count' if finalizada and atividade.confirmacao else num_inscritos(db,atividade)) or 0
+n_inscritos =  ('atividade.confirmados.count' if finalizada and atividade.confirmacao else num_inscritos_(db,atividade)) or 0
 
 delta = db(db.delta_inscricao.atividade_id==atividade.id).select(
             db.delta_inscricao.ALL,orderby=db.delta_inscricao.data)
@@ -65,7 +65,7 @@ pass
 
 {{if not inscricoes_encerradas and len(deltas) > 1:}}
 <div class="badge badge-success">
-    {{=(deltas[-1]*100/(delta[-2])) if delta[-2] else '1000'}} %
+    {{=(deltas[-1]*100/(deltas[-2])) if (len(deltas)>1 and deltas[-2]) else '1000'}} %
     <i class="icon-arrow-up"></i>
 </div>
 {{pass}}

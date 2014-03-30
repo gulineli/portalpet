@@ -1,5 +1,9 @@
 {{extend 'default/pessoa_base.html' if not request.ajax else ''}}
 
+{{
+from atividade_utils import periodos_shortcut
+from inscricao_utils import em_periodo_confirmacao,em_periodo_inscricao
+}}
 
 {{ if len(ativ_prev): }} {# ATIVIDADES PREVISTAS #}
     <h2>
@@ -18,29 +22,29 @@
         {{ for a in ativ_prev: }}
           <tr>
             <td>
-              {{ if a.atividade.conf: }}
+              {{ if a.atividade.confirmacao: }}
                 {{ if a.inscrito.confirmado: }}
                   <p title="Confirmado"><a class="btn btn-success" href="#" disabled="disabled"><i class="icon-ok"></i></a></p>
                 {{ else: }}
-                  {% if a.atividade.do_conf %}
+                  {{ if em_periodo_confirmacao(db,a.atividade): }}
                     <p>
                       <a href = "{% url conf_inscricao_pessoa pessoa.slug a.id %}" class="btn btn-warning" title="Inscrição não confirmada. Confirmar?" >
                         <i class="icon-warning-sign icon-white"></i>
                       </a>
                     </p>
-                  {% endif %}
+                  {{ pass }}
                 {{ pass }}
               {{ pass }}
-              {% if a.atividade.do_insc %}
-                <a href="{% url delete_inscricao_pessoa pessoa.slug a.id %}" onclick="return linkid(this);" title="Cancelar Inscrição?" class="btn btn-danger">
+              {{ if em_periodo_inscricao(db,a.atividade): }}
+                <a href="{{=URL('atividades','delete_inscricao_pessoa',args=(a.atividade.slug,pessoa.pessoa.slug)) }}" onclick="return linkid(this);" title="Cancelar Inscrição?" class="btn btn-danger btn-xs">
                   <i class="icon-trash icon-white" ></i>
                 </a>
-              {% endif %}
+              {{ pass }}
             </td>
-          <td><a href="{{#a.atividade.get_absolute_url }}">{{=a.atividade.nome }}</a></td>
+          <td><a href="{{=URL('atividades','atividade',args=(a.atividade.slug),extension='html') }}">{{=a.atividade.nome }}</a></td>
           <td>{{=periodos_shortcut(db,a.atividade.id) }}</td>
           <td>
-            <a href="{% url comprovante_inscricao pessoa.slug a.atividade.id %}">
+            <a href="{{=URL('atividades','comprovante_inscricao',args=(a.atividade.slug,pessoa.pessoa.slug),extension='html'  ) }}">
               <i class="icon-download" ></i> Comprovante de inscrição
             </a>
           </td>

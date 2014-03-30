@@ -1,7 +1,7 @@
 {{extend 'atividades/atividade_base.html' }}
 
 {{
-from atividade_utils import atividade_termino,listas_feitas,num_presenca,num_inscritos
+from atividade_utils import atividade_termino,listas_feitas,num_presenca
 
 termino = atividade_termino(db,atividade)
 finalizada = termino < request.now

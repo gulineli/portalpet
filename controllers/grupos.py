@@ -180,6 +180,14 @@ def reuniao():
     response.title = db.reuniao._format(reuniao)
     
 #    if reuniao.termino:
+#        from reuniao_utils import reuniao_create_arquivo
+#        pdf = reuniao_create_arquivo(db,request,response,reuniao)
+#        response.headers['Content-Type']='application/pdf'
+#        response.headers['Content-Disposition'] = \
+#                'filename=%s_%s.pdf' %(reuniao.number(),reuniao.inicio.year)
+#        return pdf
+        
+#    if reuniao.termino:
 #        return redirect(URL('grupos','reunioes', args=(grupo.slug,reuniao.hash)) )
 
     participantes = reuniao.participantes_set().select()

@@ -294,7 +294,7 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 							<span class="btn btn-danger"></span>
 						</div>
 					</div><!-- #sidebar-shortcuts -->
-                    {{is_mobile=request.user_agent().is_mobile if request.user_agent else None}}
+                    {{is_mobile=request.user_agent().get('is_mobile')}}
                       {{if response.menu:
                         =MENU_(response.menu, _class='mobile-menu nav' if is_mobile else 'nav nav-list',mobile=is_mobile,li_class='',ul_class='submenu',li_active='active',active_url=request.env.path_info)
                         pass

@@ -6,6 +6,7 @@ from atividade_utils import atividade_inicio,atividade_termino,num_inscritos_
 
 from datetime import datetime
 
+from gluon.debug import dbg
 
 ## ordem_inscricao - insc_number
 
@@ -26,6 +27,7 @@ def insc_online_subativs_(db,atividade):
                        db.atividade.insc_online==True).select(db.atividade.id) )
                     
 
+##do_conf
 def em_periodo_confirmacao(db,atividade):
     if atividade_termino(db,atividade):
         return
@@ -35,17 +37,19 @@ def em_periodo_confirmacao(db,atividade):
         return True
             
             
+##do_insc
 def em_periodo_inscricao(db,atividade):
     """Se a atividade esta em periodo de inscricao"""
     termino = atividade_termino(db,atividade)
+    today = datetime.today().date()
     
     #se a atividade já terminou não pode fazer a inscrição
     if termino < datetime.now(): return
-
-    inicio = atividade.inicio_inscricao or datetime.today()
-    termino = atividade.termino_inscricao or termino
     
-    if datetime.today() >= inicio and datetime.today() <= termino:
+    inicio = atividade.inicio_inscricao or today
+    termino = atividade.termino_inscricao or termino.date()
+    
+    if today >= inicio and today <= termino:
         return True
         
         
@@ -56,58 +60,60 @@ def atividades_disponiveis(db,atividade,pessoa,pessoal=True,periodo_insc=True):#
        ´´´pessoal´´´      : True ->> lista apenas as atividades que liberam inscricao online.
        ´´´periodo_insc´´´ : True ->> filtra somente as atividades que estao em periodo de inscricao """
     
-    periodo = db.atividade_periodo
-    
-    grupo = db.grupo[atividade.grupo_id]
-    q_ativs_inscritas = (db.inscrito.pessoa_id==pessoa.id) & \
-                        (db.atividade.id==db.inscrito.atividade_id)
-              
-    #Não interessa os horários do evento e sim das atividades que fazem parte dele
-    atividades_inscritas = db(q_ativs_inscritas & \
-                              ~(db.atividade.tipo=='ev') ).select(db.atividade.ALL)
-    
-    ##Preparando a query das atividades disponiveis:
-    n_periodo_inscricao=[0] ##variavel auxiliar que controla as atividades que NÃO estao em periodo de inscricao
-    atividades_conflitantes = [0]
-    
-    #Verificando as atividades que acontecem no periodo que a pessoa está "livre"
-    if len(atividades_inscritas):
-    
-        ##Apenas para inicializar a query. Não é necessário
-        q_exclude_periodo = periodo.id > 0
+    if pessoa:
+        periodo = db.atividade_periodo
         
-        for ativ in atividades_inscritas:
-            for p in db(db.atividade_periodo.atividade_id==ativ.id
-                                 ).select(orderby=db.atividade_periodo.inicio):
-                
-                q_exclude_periodo = q_exclude_periodo | \
-                      ( ((periodo.inicio <= p.inicio) & (periodo.termino > p.inicio)) | \
-                        ((periodo.inicio < p.termino) & (periodo.termino >= p.termino) ))
-
-        ##Atividades que conflitam o horario de realização
-        atividades_conflitantes = db(q_exclude_periodo)._select(periodo.atividade_id, groupby=periodo.id)
+        grupo = db.grupo[atividade.grupo_id]
+        q_ativs_inscritas = (db.inscrito.pessoa_id==pessoa.id) & \
+                            (db.atividade.id==db.inscrito.atividade_id)
+                  
+        #Não interessa os horários do evento e sim das atividades que fazem parte dele
+        atividades_inscritas = db(q_ativs_inscritas & \
+                                  ~(db.atividade.tipo=='ev') ).select(db.atividade.ALL)
         
-        #Filtra somente as atividades do grupo que estão em periodo de inscrição!
-        if periodo_insc:
-            n_periodo_inscricao = db((db.atividade.id==periodo.atividade_id) & \
-                                     (periodo.inicio < datetime.now()) )._select(db.atividade.id)
-    
-    return db(~q_ativs_inscritas & \
-              ~db.atividade.id.belongs(atividades_conflitantes) & \
-              ~db.atividade.id.belongs(n_periodo_inscricao) & \
-              (db.atividade.grupo_id==grupo.id) ##Somente considera as atividades de um mesmo grupo.
-              ).select(db.atividade.ALL,groupby=db.atividade.id), atividades_inscritas
+        ##Preparando a query das atividades disponiveis:
+        n_periodo_inscricao=[0] ##variavel auxiliar que controla as atividades que NÃO estao em periodo de inscricao
+        atividades_conflitantes = [0]
+        
+        #Verificando as atividades que acontecem no periodo que a pessoa está "livre"
+        if len(atividades_inscritas):
+        
+            ##Apenas para inicializar a query. Não é necessário
+            q_exclude_periodo = periodo.id > 0
+            
+            for ativ in atividades_inscritas:
+                for p in db(db.atividade_periodo.atividade_id==ativ.id
+                                     ).select(orderby=db.atividade_periodo.inicio):
+                    
+                    q_exclude_periodo = q_exclude_periodo | \
+                          ( ((periodo.inicio <= p.inicio) & (periodo.termino > p.inicio)) | \
+                            ((periodo.inicio < p.termino) & (periodo.termino >= p.termino) ))
 
+            ##Atividades que conflitam o horario de realização
+            atividades_conflitantes = db(q_exclude_periodo)._select(periodo.atividade_id, groupby=periodo.id)
+            
+            #Filtra somente as atividades do grupo que estão em periodo de inscrição!
+            if periodo_insc:
+                n_periodo_inscricao = db((db.atividade.id==periodo.atividade_id) & \
+                                         (periodo.inicio < datetime.now()) )._select(db.atividade.id)
+        
+        return db(~q_ativs_inscritas & \
+                  ~db.atividade.id.belongs(atividades_conflitantes) & \
+                  ~db.atividade.id.belongs(n_periodo_inscricao) & \
+                  (db.atividade.grupo_id==grupo.id) ##Somente considera as atividades de um mesmo grupo.
+                  ).select(db.atividade.ALL,groupby=db.atividade.id), atividades_inscritas
+    return db(db.atividade.id==0).select(),db(db.atividade.id==0).select()
 
 def ja_inscrito_(db,atividade,pessoa):
-    return db((db.inscrito.pessoa_id==pessoa.pessoa.id) & \
-              (db.inscrito.atividade_id==atividade.id)).count()
+    if pessoa:
+        return db((db.inscrito.pessoa_id==pessoa.pessoa.id) & \
+                  (db.inscrito.atividade_id==atividade.id)).count()
 
 
 def liberar_inscricao(db,atividade,pessoa=None,do_insc=False,check_insc=True):
     """Função que verifica se as inscricoes podem ou não ser liberadas para a atividade.
        Como criterio de liberacao estão o número de vagas disponiveis e se a atividade permite a
-       lista de espera. Caso informado a ´´pessoa´´ verifica se o mesmo está ou não  inscrito.
+       lista de espera. Caso informado a ´´pessoa´´ verifica se a mesma está ou não  inscrita.
        ´´´do_insc´´´ E se a função deve ou não levar em conta as datas previstas de inscrição
        check_insc se for True ele verifica tbm se a pessoa ja se inscreveu na atividade,
        caso contratio ver se ela poderia se inscrever"""
@@ -132,21 +138,26 @@ def liberar_inscricao(db,atividade,pessoa=None,do_insc=False,check_insc=True):
 
 def inscricoes_finalizadas(db,atividade,pessoa):
     subatividade = db.atividade_subatividades
-    return bool(db((db.inscrito.pessoa_id==pessoa.id) & \
-                   (db.inscrito.finalizada==True) & \
-                   (db.inscrito.atividade_id==db.atividade.id) & (
-                   ((subatividade.mestra_id==atividade.id) & (subatividade.subatividade_id==db.atividade.id)) |\
-                   ((subatividade.subatividade_id==atividade.id) & (subatividade.mestra_id==db.atividade.id)) )
-                ).count() )
+    if pessoa:
+        return bool(db((db.inscrito.pessoa_id==pessoa.id) & \
+                       (db.inscrito.finalizada==True) & \
+                       (db.inscrito.atividade_id==db.atividade.id) & (
+                       ((subatividade.mestra_id==atividade.id) & (subatividade.subatividade_id==db.atividade.id)) |\
+                       ((subatividade.subatividade_id==atividade.id) & (subatividade.mestra_id==db.atividade.id)) |
+                       (db.atividade.id==atividade.id))
+                    ).count() )
             
 
 def finaliza_inscricoes(db,atividade,pessoa):
     subatividade = db.atividade_subatividades
-    return db((db.inscrito.pessoa_id==pessoa.id) & \
-              (db.inscrito.atividade_id==db.atividade.id) & (
-              ((subatividade.mestra_id==atividade.id) & (subatividade.subatividade_id==db.atividade.id)) |\
-              ((subatividade.subatividade_id==atividade.id) & (subatividade.mestra_id==db.atividade.id)) )
-          ).update(db.inscrito.finalizada==True)
+    inscricoes_id = db((db.inscrito.pessoa_id==pessoa.id) & \
+                      (db.inscrito.atividade_id==db.atividade.id) & (
+                      ((subatividade.mestra_id==atividade.id) & (subatividade.subatividade_id==db.atividade.id)) |\
+                      ((subatividade.subatividade_id==atividade.id) & (subatividade.mestra_id==db.atividade.id)) |
+                      (db.atividade.id==atividade.id))
+                  )._select(db.inscrito.id)
+    print db(db.inscrito.id.belongs(inscricoes_id) ).select()
+    return db(db.inscrito.id.belongs(inscricoes_id) ).update(finalizada=True)
                 
                 
 def insc_number(db,inscrito):
@@ -187,9 +198,10 @@ def valor_total_(db,atividade,pessoa):
     subatividade = db.atividade_subatividades
     
     ##Todas as atividades relacionadas a atividade (para o caso de ser um evento)
-    atividades_id = db((db.atividade.id==atividade.id) & (
+    atividades_id = db(#(db.atividade.id==atividade.id) & (
                        ( (subatividade.mestra_id==atividade.id) & (subatividade.subatividade_id==db.atividade.id)) |\
-                       ( (subatividade.subatividade_id==atividade.id) & (subatividade.mestra_id==db.atividade.id)) )
+                       ( (subatividade.subatividade_id==atividade.id) & (subatividade.mestra_id==db.atividade.id)) |\
+                         (db.atividade.id==atividade.id) #) 
                        )._select(db.atividade.id)
     
     q = (db.atividade.id==db.inscrito.atividade_id) & \
@@ -248,9 +260,8 @@ def valor_residual_(db,atividade,pessoa=None):
         return atividade.valor
 
 
-def inscricao_pessoal(request,db,atividade,pessoa,insc_grupo=False,editar=False):
-    ###O CODIGO DESTA FUNCAO PRECISA SER TODO REVISTO POIS EXISTE MTA COISA REDUNDANTE
-    ###FUGINDO DAS BOAS PRATICAS DE PROGRAMACAO
+def inscricao_pessoal(request,db,atividade,pessoa,insc_grupo=False,editar=False,tipo="pessoal"):
+    ##Obtendo/definindo paramentros basicos
     atividade_pagamento = atividade_pagamento_(db,atividade)
     insc_grupo = insc_grupo #and pessoa.is_integrante()
     do_insc = em_periodo_inscricao(db,atividade)
@@ -317,7 +328,7 @@ def inscricao_pessoal(request,db,atividade,pessoa,insc_grupo=False,editar=False)
 #                    messages.warning(request,u"Observe que o boleto %s pode ter sofrido alterações!" %boleto.nosso_numero_formatado)
 #    else:
     ########-------------------
-    boletos = boletos_(db,atividade,pessoa.pessoa)
+    boletos = boletos_(db,atividade,pessoa.pessoa if pessoa else None)
     n_pagos = boletos.exclude(lambda row: ((db.boleto.valor_pago>0) | (db.boleto.sinalizar_pago==True)) )
 
     if len(n_pagos):
@@ -325,15 +336,15 @@ def inscricao_pessoal(request,db,atividade,pessoa,insc_grupo=False,editar=False)
             b.update_record(trash=True)
 
         ##Atualiza os boletos da pessoa
-        boletos = boletos_(db,atividade,pessoa.pessoa)
+        boletos = boletos_(db,atividade,pessoa.pessoa if pessoa else None)
 
-    valor_total = valor_total_(db,atividade,pessoa.pessoa)
+    valor_total = valor_total_(db,atividade,pessoa.pessoa if pessoa else None)
     
     valor_boletos = 0.
     for b in boletos: 
         valor_boletos+=b.valor
 
-    valor_residual = valor_residual_(db,atividade,pessoa.pessoa)
+    valor_residual = valor_residual_(db,atividade,pessoa.pessoa if pessoa else None)
     if atividade_pagamento and atividade_pagamento.forma_pagamento == "bo":
         if valor_total > valor_boletos and valor_residual:
             novo = bool( boletos.find(lambda row: db.boleto.sinalizar_pago==False).isempty() )#or grupo_inscricao.finalizada)
@@ -360,7 +371,7 @@ def inscricao_pessoal(request,db,atividade,pessoa,insc_grupo=False,editar=False)
 
     lib_inscricao = False
     if atividade_inscricao.insc_online or \
-            atividade_inscricao.insc_online_subativs() and not insc_ativ:
+            insc_online_subativs_(db,atividade_inscricao) and not insc_ativ:
         lib_inscricao = liberar_inscricao(db,atividade_inscricao,pessoa,do_insc=True,check_insc=True)
 
     bloquear = False
@@ -375,7 +386,6 @@ def inscricao_pessoal(request,db,atividade,pessoa,insc_grupo=False,editar=False)
 #                 Q(pessoa__user=request.user))
 #    inscricoes = Inscrito.objects.filter(filtro | extra_filtro)
     action = request.post_vars.get('submit')
-    print action,type(action),111111111111111111111111111111111111111
 #    ##EFETIVANDO A INSCRIÇÃO
     if action:
         if action == 'Cancelar':
@@ -427,7 +437,6 @@ def inscricao_pessoal(request,db,atividade,pessoa,insc_grupo=False,editar=False)
                             for pessoa in range(pessoas_insc):
                                 if num_inscritos_(db,atividade_inscricao) < atividade_inscricao.num_max:
                                     insc = db.inscrito.update_or_insert(
-                                                    pessoa=pessoa,
                                                     atividade = atividade_inscricao)
                                 else: break
                             msg = u'Nem todos os integrantes selecionados puderam ser\
@@ -477,7 +486,7 @@ def inscricao_pessoal(request,db,atividade,pessoa,insc_grupo=False,editar=False)
             if not action == "Finalizar inscrição":
                 return redirect(URL("") )#"%s%s" %(
 #                            request.path,'?atividade_inscricao=%s' %request.GET.get('atividade_inscricao') if request.GET.get('atividade_inscricao') else "") )
-           =´´´´´´´´´´´´´´´´´´´´´´ else:
+            else:
                 finaliza_inscricoes(db,atividade,pessoa.pessoa)
                 
 #                ##Caso seja um integrante inscrevendo o seu grupo finalizar a inscrição dos grupo
@@ -530,7 +539,8 @@ def inscricao_pessoal(request,db,atividade,pessoa,insc_grupo=False,editar=False)
 ###        form = InscGrupoAtividade(pessoa = pessoa,atividade=atividade_inscricao,
 ###                                  initial={'atividade':atividade_inscricao.id})
 
-    insc_finalizadas = inscricoes_finalizadas(db,atividade,pessoa.pessoa)
+    insc_finalizadas = inscricoes_finalizadas(db,atividade,pessoa.pessoa if pessoa else None)
+    print insc_finalizadas,111111111111111111111111111111111111111111111111111111111111
 #    valor_total = atividade.valor_total(pessoa)
     show_resumo = (not do_insc and not atividade_inscricao.permuta) or \
                   (insc_finalizadas and not insc_grupo and not editar) or \
@@ -543,3 +553,6 @@ def inscricao_pessoal(request,db,atividade,pessoa,insc_grupo=False,editar=False)
 ###        return HttpResponseRedirect(reverse('editar_inscricao_pessoal',args=(atividade.slug,)))
     pessoa_insc = pessoa
     return locals()
+    
+
+

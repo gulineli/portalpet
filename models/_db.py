@@ -30,7 +30,7 @@ from django_login import django_login
 ## be redirected to HTTPS, uncomment the line below:
 # request.requires_https()
 
-db = DAL('sqlite://storage.db',
+db = DAL('mysql://root:mysqlpet@localhost/new_portalpet',#'sqlite://storage.db',
          migrate=MIGRATE,#fake_migrate=True,
          check_reserved=['postgres', 'mysql'],lazy_tables=True)
 
@@ -121,6 +121,13 @@ db.define_table('estado',
     Field('nome','string',notnull=True),
     Field('sgl','string',notnull=True),
     format="%(nome)s - %(sgl)s",
+    migrate=MIGRATE)
+    
+
+db.define_table('tema',
+    Field('nome','string'),
+    Field('descricao','string'),
+    Field('ativo','integer'),
     migrate=MIGRATE)
     
     
@@ -324,13 +331,6 @@ db.define_table('grupousergroup',
     migrate=MIGRATE)
 
 
-db.define_table('tema',
-    Field('nome','string'),
-    Field('descricao','string'),
-    Field('ativo','integer'),
-    migrate=MIGRATE)
-
-
 #db.define_table('tema',
 #    Field('layout_base_id','integer'),
 #    Field('layout_menu_id','integer'),
@@ -484,8 +484,8 @@ atividade_tipos = {'ev':u'Evento','pa':u'Palestra','se':u'Seminário',
 atividade_classificacao = {'en':u'Ensino','ps':u'Pesquisa','ex':u'Extensão',
                            'tr':u'Ensino, Pesquisa e Extensao','ot':u'Outros'}
 db.define_table('atividade',
-    Field('grupo_id','reference grupo',required=True,writable=False),
-    Field('nome','string',required=True,writable=False),
+    Field('grupo_id','reference grupo',required=True,writable=False,readable=False),
+    Field('nome','string',required=True),
     Field('tipo','string',required=True,
           represent=lambda v,r: atividade_tipos[v],
           requires=IS_IN_SET(atividade_tipos) ),
@@ -494,7 +494,7 @@ db.define_table('atividade',
           requires=IS_IN_SET(atividade_classificacao) ),
 #    Field('contato_id','integer'),
     Field('obs','string'),
-    Field('descricao','text',label="Descrição",comment="Insira o máximo de informações relativas a esta atividade. Este campo se transfomará na página inicial do perfil desta atividade."),
+    Field('descricao','text',label="Descrição",comment="Insira o máximo de informações relativas a esta atividade. Este campo se transfomará na página inicial do perfil desta atividade.",widget=bootstrap_editor),
     Field('foto','upload',uploadfolder=os.path.join(request.folder,'uploads','atividades','photos') ),
     Field('miniatura','upload',uploadfolder=os.path.join(request.folder,'uploads','atividades','photos'),
           compute=lambda row: THUMB(row.foto,nx=200,ny=200,folder=['uploads','atividades','photos']) ),
@@ -561,7 +561,7 @@ db.define_table('organizacao',
 db.define_table('acao',
     Field('table_name','string'),
     Field('object_id','integer'),
-    Field('estado','string',IS_IN_SET([('p','Ação Pendente'),('r','Processando'),('c','Ação Concluido')]),default="p"),
+    Field('estado','string',requires=IS_IN_SET({'p':'Ação Pendente','r':'Processando','c':'Ação Concluido'}),default="p"),
     Field('error','boolean'),
     Field('errorinfo','text'),
     migrate=MIGRATE)
@@ -572,7 +572,7 @@ db.define_table('acao_grupo',
     Field('data_solicitacao','datetime'),
     Field('data_processamento','datetime'),
     Field('showed','datetime'),
-    Field('estado','string',IS_IN_SET([('p','Ação Pendente'),('r','Processando'),('c','Ação Concluido')]),default="p"),
+    Field('estado','string',requires=IS_IN_SET([('p','Ação Pendente'),('r','Processando'),('c','Ação Concluido')]),default="p"),
     Field('comentario','text'),
     Field('user_id','reference auth_user'),
     migrate=MIGRATE)
@@ -702,4 +702,8 @@ if pessoa:
                      ~(db.mensagem.de==pessoa.pessoa.id)).count(distinct=True,cache=(cache.ram, 60))
 
 
-                 
+
+
+#for t in db._tables:
+#    print t
+#    a=db(db[t].id>0).select(limitby=(0,1))

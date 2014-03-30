@@ -82,17 +82,20 @@ class Autocomplete(object):
                              '_name': "%s_text" %field.name,
                              '_id': "%s_%s_text" % (self.tablename, field.name),
                              '_value': '' if self.show_result else self.format(value),
-                             '_class': "bt_autocomplete",
+                             '_class': "bt_autocomplete form-control",
                              '_data-url': self.url,
                              '_data-resume': 'true' if self.show_result else 'false'})
         
         kwargs = self.kwargs
         
-        element = DIV(INPUT(**kwargs),_class="input-group" ) 
+        element = DIV(INPUT(_type="hidden",_name=field.name,_id="%s_%s" %(self.tablename, field.name),_value=value,_class="typeahead"),
+                      INPUT(**kwargs),
+                      _class="input-group" ) 
         if not self.show_result:
             element.append(
-                        SPAN(BUTTON("Adicionar!",_class="btn btn-sm disabled",_type="button",_id="id_add_%s" %field.name,
-                                _title="Clique para adicionar",_disabled="disabled"),
+                        SPAN(BUTTON("Adicionar!",_class="btn btn-sm disabled",
+                                    _type="button",_id="id_add_%s" %field.name,
+                                    _title="Clique para adicionar",_disabled="disabled"),
                              _class="input-group-btn" )
                   )
     #    else:
@@ -107,7 +110,6 @@ class Autocomplete(object):
                                 _id="add_%s_%s_text" % (self.tablename, field.name),
                                 _onclick="return showAddAnotherPopup(this);"),
                              _class="input-group-btn" ) )
-
         if self.show_result:
             element+=DIV(
                         A(I(_class="icon-trash")," ",self.format(value) if callable(self.format) else self.format %value,
@@ -118,7 +120,7 @@ class Autocomplete(object):
                         _class="resume",
                         _style="margin-top:5px;"
             )
-        element += INPUT(_type="hidden",_name=field.name,_id="%s_%s" %(self.tablename, field.name),_value=value,_class="typeahead")
+#        element += 
         return element
 
 

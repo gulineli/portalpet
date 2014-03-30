@@ -65,7 +65,9 @@
               <td>{{=date2str(r.inicio,T("%Y-%m-%d"))}}</td>
               <td>{{=date2str(r.inicio,"%H:%M")}}</td>
               <td>{{=datediff_T((r.termino or request.now) - r.inicio)}}</td>
-              <td>{{ if r.termino: }}Finalizada{{ else: }}Em aberto{{ pass }}</td>
+              <td>
+                {{ if r.termino and r.arquivo_id: }}
+                    <a href={{=URL('default','download',args=(r.arquivo_id.arquivo,)) }}>download</a>{{ else: }}Em aberto{{ pass }}</td>
               <td>
                 <a href="{{=URL('grupos','reunioes',args=(grupo.slug,r.hash,'delete'))}}" class="red">
                   <i class="icon-trash bigger-130"></i>

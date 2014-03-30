@@ -6,7 +6,7 @@
       </a>
     {{ pass }}
     {{ if do_insc or atividade.permuta: }}
-      <a href="{{=URL('atividades','editar_inscricao_pessoal',args=(atividade.slug,) ) }}" class="btn btn-primary pull-right" title="Clique para editar sua inscrição" rel="tooltip">
+      <a href="{{=URL('atividades','inscricao',args=(atividade.slug,),vars={'editar':True} ) }}" class="btn btn-primary pull-right" title="Clique para editar sua inscrição" rel="tooltip">
         Editar Inscrição
       </a>
     {{ pass }}
@@ -19,13 +19,13 @@
       <p>
         <i class="icon-circle-exclamation-mark"></i>
         Você deverá confirmar sua inscri&ccedil;&atilde;o de
-        <em><u>{{=atividade_inscricao.inicio_confmacao }}</u></em> a
+        <em><u>{{=atividade_inscricao.inicio_confirmacao }}</u></em> a
         <em><u>{{=atividade_inscricao.termino_confirmacao }}</u></em> no site do portal
       </p>
     {{ pass }}
     <p>
       Obtenha seu
-      <a href="{{=URL('atividades','comprovante_inscricao',args=(atividade.slug,pessoa.pessoa.slug) ) }}">
+      <a href="{{=URL('atividades','comprovante_inscricao',args=(atividade.slug,pessoa.pessoa.slug)) }}">
         Comprovante de inscrição <i class="icon-download" ></i>
       </a>
     </p>
@@ -92,7 +92,6 @@
         {{ pass }}
       </p>
     {{ pass }}
-    <hr>
     {{ #with atividade_inscricao as atividade }}
       {{ #include "atividade/tabela_atividades_inscritas.html"}}
     {{ #endwith }}

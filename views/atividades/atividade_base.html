@@ -12,7 +12,7 @@ if not request.function=='atividade':
 {{block header}}{{end}}
 {{block settings}}{{end}}
 
-<div class="widget-box transparent{{if not session.show_header_atividade:}} collapsed{{pass}}">
+<div class="widget-box transparent{{if not session.show_header_atividade or action:}} collapsed{{pass}}">
     <div class="widget-header widget-header-flat">
 	    <h4 class="lighter">
 		    {{=atividade.nome}}
