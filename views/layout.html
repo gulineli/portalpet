@@ -486,7 +486,20 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 						    size: size
 					    });
 				    })
-				
+                    
+                    $('.datetime').datetimepicker({
+                        useSeconds: false,
+                        sideBySide: true,
+                        language:'pt-BR',
+                        icons:{
+                            time: 'icon-time',
+                            date: 'icon-calendar',
+                            up:   'icon-chevron-up',
+                            down: 'icon-chevron-down'
+                        }
+                    
+                    });
+                    
 				})
 
 				$('#recent-box [data-rel="tooltip"]').tooltip({placement: tooltip_placement});

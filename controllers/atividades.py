@@ -12,26 +12,49 @@ def atividade():
     session.show_header_atividade=True
     
     atividade = atividade_record or redirect(URL('index'))
+    
     action = request.vars.get('action','')
     e = request.vars.get('estagio','1')
     estagio = estagio_.get(e) or estagio_['1']
     
     if action in ('editar','criar'):
         response.title = "Nova Atividade" if action=='criar' else 'Editando  Atividade'
-        form = SQLFORM(db.atividade, atividade,showid=False,fields=estagio['fields'],
-                       buttons = [],)
-
+        
+        if e =='5':
+            table=db.atividade_congresso
+            object_=db.atividade_congresso.update_or_insert(db.atividade_congresso.atividade_id==atividade.id)
+        else:
+            table=db.atividade
+            object_=atividade
+        
+        form = SQLFORM(table, object_,showid=False,fields=estagio['fields'],buttons = [],)
+        
+        if e=='2':
+            form[0].insert(0,LOAD('atividades','get_periodos.load',args=(atividade.slug,),
+                                  _class="form-group") )
+            
+            
         if form.process().accepted:
             if action=='criar':
                 response.flash=T('Atividade cadastrada com sucesso')
             else:
                 response.flash=T('Dados atualizados com sucesso')
-            redirect(URL('atividades','atividade',args=(atividade.slug,)))
+            if e=='5':
+                redirect(URL('atividades','atividade',args=(atividade.slug,)))
+            else:
+                redirect(URL('atividades','atividade',args=(atividade.slug,),vars=dict(action='editar',estagio=int(e)+1)))
     else:
         response.title=''
 
     return locals()
 
+
+def get_periodos():
+    atividade = atividade_record or redirect(URL('index'))
+    periodos=db(db.atividade_periodo.atividade_id==atividade.id).select()
+    
+    return locals()
+    
 
 def visao_geral():
     atividade = atividade_record or redirect(URL('index'))

@@ -52,7 +52,8 @@ def atividade_menu(response,auth,atividade):
 
 estagio_ = {
         '1':{'fields':['tipo','classificacao','nome','obs','divulgar','mini_relatorio'],
-#                                'periodos','sub_atividades'],
+#                       'atividade_periodo':['periodos'],
+#                       'atividade_subatividades':['subatividade_id'],
              'mensagem':"Este é o mínimo que precisa definir para criar uma atividade" },
 
        '2':{'fields':['foto','descricao',],
@@ -61,17 +62,22 @@ estagio_ = {
              será utilizado com página inicial de sua atividade. Você pode inserir imagens\
              links para outras páginas e até mesmo vídeos. Aproveite!" },
 
-       '3':{'fields':['inscricao','valor','instrucoes','msgonerror','tutorial','tutorial_url',
-                      'groups','permuta','num_max','espera','conf','insc_mestra','insc_online',
-                      'inicio_inscr','termino_inscr','inicio_conf','termino_conf','limitante'],
+       '3':{'fields':['requer_inscricao','valor','instrucoes','msgonerror','tutorial','tutorial_url',
+#                      'groups',
+                      'permuta','num_max','espera','confirmacao','insc_mestra','insc_online',
+                      'inicio_inscricao','termino_inscricao','inicio_confirmacao',
+                      'termino_confirmacao','limitantes'],
             'mensagem':"Defina as estratégias de inscrições para esta atividade.\
                             Em caso de dúvidas consulte os balões dos campos." },
 
-       '4':{'fields':['num_chamada','cert','min_frequen','cert_imp'],
+       '4':{'fields':['num_chamadas','certifica','frequencia_minima','certificados_impressos'],
             'mensagem':"Defina as condições para certificar um inscrito na atividade.\
                             Em caso de dúvidas consulte os balões dos campos." },
 
-       '5':{'fields':['aceita_artigos','avaliadores','ficha_avaliacao','autores',
+       '5':{'fields':['aceita_artigos',
+#                      'avaliadores',
+                      'ficha_avaliacao',
+                      #'autores',
                       'num_artigos','num_artigos_grupo','vincular_grupo','num_autores',
                       'data_limite_submissao','dias_avaliacao','prazo_correcao','carta_aceite'],
             'mensagem':"Defina as condições para certificar um inscrito na atividade.\
