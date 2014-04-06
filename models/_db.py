@@ -30,7 +30,7 @@ from django_login import django_login
 ## be redirected to HTTPS, uncomment the line below:
 # request.requires_https()
 
-db = DAL('mysql://root:mysqlpet@localhost/new_portalpet',#'sqlite://storage.db',
+db = DAL('sqlite://storage.db',
          migrate=MIGRATE,#fake_migrate=True,
          check_reserved=['postgres', 'mysql'],lazy_tables=True)
 
