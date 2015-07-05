@@ -27,10 +27,26 @@ response.breadcrumbs = [(URL(request.application,'default','index'),"Home")]
 #########################################################################
 
 response.menu = [
-    ((I(_class="icon-home")," ",T('Home')), (request.function=='index'), URL('default', 'index'), []),
-    (T('Grupos'), (request.function=='grupos'), URL('default','grupos'),[]),
-    (T('Atividades/Eventos'), (request.function=='atividades'), URL('default','atividades'),[]),
-    (T('Sobre o PET'), (request.function=='sobre_o_pet'), URL('default','sobre_o_pet'),[]),
+    (
+     (I(_class="menu-icon fa fa-home")," ",T('Home')),
+     (request.controller=='default' and (request.function=='home' or request.function=='index')),
+     URL('default', 'home'), []
+    ),
+    (
+     (I(_class="menu-icon fa fa-group")," ", T('Grupos')),
+     (request.function=='grupos'),
+     URL('default','grupos'),[]
+    ),
+    (
+     (I(_class="menu-icon fa fa-tasks")," ", T('Atividades/Eventos')),
+     (request.controller=='atividades' and request.function=='index'),
+     URL('atividades','index'),[]
+    ),
+    (
+     (I(_class="menu-icon fa fa-info-circle")," ", T('Sobre o PET')),
+     (request.function=='sobre_o_pet'),
+     URL('default','sobre_o_pet'),[]
+    ),
 
 ]
 

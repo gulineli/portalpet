@@ -1,5 +1,5 @@
 {{extend 'default/pessoa_base.html' if not request.ajax else ''}}
-
+{{from atividade_utils import versao_status,versao_editar,artigo_avaliacao_liberada,versao_prazo}}
 
 {{ if len(artigos): }}
   <table class="table table-striped table-bordered">
@@ -18,49 +18,57 @@
       {{ for artigo in artigos: }}
         {{
         versao = db(db.versao.artigo_id==artigo.id).select(orderby=~db.versao.revisao).first()
-        editar = versao_editar(db,versao)
-        avaliacao_liberada = artigo_avaliacao_liberada(db,artigo,corrente=versao)
-        prazo = versao_prazo(db,versao,editar=editar)
-        }}
-        <tr>
-          <td>
-            <div class="btn-group">
-              {{ if not editar: }}
-                <a href="{{=URL('atividades','visualizar_artigo',args=(artigo.id,),extension='html',vars=vars ) }}" title="clique para ver os {{ if versao.avaliacao_id and versao.avaliacao_id.liberar: }}comentários da comissão{{ else: }}detalhes deste artigo{{ pass }}" rel="tooltip" class="btn btn-xs">
-                  <i class="icon-eye-open"></i>
-                </a>
-              {{ pass }}
-            </div>
-          </td>
-          <td>
-            {{ if editar: }}
-              <a href="{{# url editar_artigo_pessoa artigo.atividade.slug artigo.id }}" title="clique para editar" rel="tooltip">
-                {{=versao.titulo}}
-              </a>
-            {{ else: }}
-              {{=versao.titulo}}
-            {{ pass }}
-          </td>
-          <td>{{=versao.revisao}}</td>
-          <td>{{=versao_status(db,versao,editar=editar)}}</td>
-          <td>
-            {{ if avaliacao_liberada: }}
-              {{ if avaliacao_liberada.parecer not in ["re","ap"] : }}
-                {{=date2str(prazo)}}
-              {{ else: }}
-                -
-              {{ pass }}
-            {{ else: }}
-              {{=date2str(prazo)}}
-            {{ pass }}
-          </td>
-          <td>
-            {{ if versao.avaliacao_id.parecer == "ap": }}
-              <a href="{{# url carta_de_aceite artigo.atividade.slug artigo.id }}"><i class="icon-download-alt"></i> download</a>
-            {{ pass }}
-          </td>
-        </tr>
+        if versao:
+            editar = versao_editar(db,versao)
+            avaliacao_liberada = artigo_avaliacao_liberada(db,artigo,corrente=versao)
+            prazo = versao_prazo(db,versao,editar=editar)
+            }}
+            <tr>
+              <td>
+                <div class="btn-group">
+                  {{ if not editar: }}
+                    <a href="{{=URL('atividades','visualizar_artigo',args=(artigo.id,),extension='html',vars=vars ) }}" title="clique para ver os {{ if versao.avaliacao_id and versao.avaliacao_id.liberar: }}comentários da comissão{{ else: }}detalhes deste artigo{{ pass }}" rel="tooltip" class="btn btn-xs">
+                      <i class="icon-eye-open"></i>
+                    </a>
+                  {{ pass }}
+                </div>
+              </td>
+              <td>
+                {{ if editar: }}
+                  <a href="{{# url editar_artigo_pessoa artigo.atividade.slug artigo.id }}" title="clique para editar" rel="tooltip">
+                    {{=versao.titulo}}
+                  </a>
+                {{ else: }}
+                  {{=versao.titulo}}
+                {{ pass }}
+              </td>
+              <td>{{=versao.revisao}}</td>
+              <td>{{=versao_status(db,versao,editar=editar)}}</td>
+              <td>
+                {{ if avaliacao_liberada: }}
+                  {{ if avaliacao_liberada.parecer not in ["re","ap"] : }}
+                    {{=date2str(prazo)}}
+                  {{ else: }}
+                    -
+                  {{ pass }}
+                {{ else: }}
+                  {{=date2str(prazo)}}
+                {{ pass }}
+              </td>
+              <td>
+                {{ if versao.avaliacao_id and versao.avaliacao_id.parecer == "ap": }}
+                  <a href="{{# url carta_de_aceite artigo.atividade.slug artigo.id }}"><i class="icon-download-alt"></i> download</a>
+                {{ pass }}
+              </td>
+            </tr>
+        {{pass}}
       {{ pass }}
     </tbody>
   </table>
-  {{ pass }}
+{{else:}}
+    
+  <div class="alert alert-info">
+    Nenhum artigo Cadastrado
+  </div>
+    
+{{ pass }}

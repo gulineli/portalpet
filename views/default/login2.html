@@ -59,20 +59,29 @@
 												<i class="icon-coffee green"></i>
 												Entre com suas credenciais
 											</h4>
+											{{if form.errors:}}
+                                              Your submitted form contains the following errors:
+                                              <ul>
+                                              {{for fieldname in form.errors:}}
+                                                <li>{{=fieldname}} error: {{=form.errors[fieldname]}}</li>
+                                              {{pass}}
+                                              </ul>
+                                              {{form.errors.clear()}}
+                                            {{pass}}
 
 											<div class="space-6"></div>
 											    <form enctype="multipart/form-data" action="" method="post">
 											        {{
-											        form.custom.widget.email['_class'] = 'form-control'
+											        form.custom.widget.username['_class'] = 'form-control'
 											        form.custom.widget.password['_class'] = 'form-control'
-											        form.custom.widget.email['_placeholder'] = 'email'
+											        form.custom.widget.username['_placeholder'] = 'email'
 											        form.custom.widget.password['_placeholder'] = 'password'
 											        }}
 											        {{=form.custom.begin}}
 											        <fieldset>
 													    <label class="block clearfix">
 														    <span class="block input-icon input-icon-right">
-											                    {{=form.custom.widget.email}}
+											                    {{=form.custom.widget.username}}
 											                    <i class="icon-user"></i>
 										                    </span>
 													    </label>

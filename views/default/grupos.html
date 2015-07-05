@@ -1,28 +1,41 @@
-{{extend 'default/portal_base.html' }}
+{{extend 'layout.html'}}
 
 {{
   n_grupos = len(grupos)
   if n_grupos:
     n_grupos_in_row = 4
     n_rows = int(n_grupos/n_grupos_in_row) + (1 if n_grupos%n_grupos_in_row else 0)
-    n = 12/n_grupos_in_row 
+    n = 12/n_grupos_in_row
     }}
-    
+
     {{for i in range(n_rows):
         =XML('<div class="row">')
-        for grupo in grupos[i*n_grupos_in_row:(i+1)*n_grupos_in_row].render(): }}
+        for grupo in grupos[i*n_grupos_in_row:(i+1)*n_grupos_in_row]: }}
         <div class="col-sm-6 col-md-{{=n}}" style="height:100%;">
           <div class="thumbnail" style="height:100%;">
             <img src="{{=URL('download',args=(grupo.miniatura,))}}" title="{{=grupo.nome}}" alt="{{=grupo.nome}}">
+            <address>
+				<strong>Twitter, Inc.</strong>
+
+				<br>
+				795 Folsom Ave, Suite 600
+				<br>
+				San Francisco, CA 94107
+				<br>
+				<abbr title="Phone">P:</abbr>
+				(123) 456-7890
+			</address>
+            
             <div class="caption">
               <h3><a href="{{=URL('grupos','grupo',args=(grupo.slug,))}}">{{=grupo.nome}}</a></h3>
-              <p>Cidade: {{=grupo.cidade_id or "-" }}</p>
+              <p>
+                Cidade: {{=db.cidade._format(grupo.cidade_id) or "-" }}
+              </p>
               {{ if grupo.curso: }}<p>Curso: {{=grupo.curso }}</p>{{pass}}
               {{ if grupo.instituicao_id: }}<p>Instituição: {{=grupo.instituicao_id }}</p>{{pass}}
               <p>
                 <a class="btn btn-primary btn-sm" href = "{% url grupo_message_box o.slug %}" rel="tooltip" title="Deixe uma Mensagem">
-                  <i class="icon-envelope" ></i>
-                  mensagem
+                  <i class="fa fa-icon fa-envelope" ></i>
                 </a>
                 <a href="#" class="btn btn-default btn-sm">Atividades</a>
               </p>

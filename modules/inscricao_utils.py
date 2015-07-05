@@ -11,7 +11,7 @@ from gluon.debug import dbg
 ## ordem_inscricao - insc_number
 
 __all__ = ['atividade_menu','ordem_inscricao','frequencia_participacao','certifica_inscrito','pessoa_get_certificados',
-           'num_presenca','listas_feitas','periodos_shortcut','atividade_inicio','atividade_termino',
+           'num_presenca','listas_feitas','periodos_shortcut',
            'data_limite_avaliacao',
            'atividade_areas_conhecimento','data_limite_submissao','versao_dataRes','versao_editar','versao_status',
            'versao_prazo','artigo_avaliacao_liberada']

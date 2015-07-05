@@ -3,8 +3,9 @@
 Django's modified functions and utilities.
 """
 
-import hashlib
 from gluon.storage import Storage
+
+import hashlib
 import struct
 import hashlib
 import binascii
@@ -394,14 +395,20 @@ def mask_hash(hash, show=6, char="*"):
 ##Termino do codigo django
 ##----------------------------------------------------------------------------------------
 
+from gluon.tools import Auth
 
 def django_login(db):
+    auth = Auth(db)
     """
     Autenticar com base nos dados salvos pelo django
     """
     
     def check_password_aux(email,password):
         u = db((db.auth_user.email==email) | (db.auth_user.username_==email)).select().first()
+        
+        if u and not u.django_password:
+            return db.auth_user.password.validate(password) == (u.password,None)
         return check_password(password, u.django_password) if u else None
 
     return check_password_aux
+    

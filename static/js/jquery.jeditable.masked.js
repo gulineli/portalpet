@@ -25,4 +25,3 @@ $.editable.addInputType('masked', {
         return(input);
     }
 });
-

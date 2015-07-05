@@ -10,46 +10,6 @@
 						<span class="profile-picture">
 							<img id="avatar" class="editable img-responsive" alt="{{=pessoa.pessoa.nome}}" src="{{=URL('download',args=(pessoa.pessoa.miniatura,))}}" />
 						</span>
-
-						<div class="space-4"></div>
-
-						<div class="width-80 label label-info label-xlg arrowed-in arrowed-in-right">
-							<div class="inline position-relative">
-								<a href="#" class="user-title-label dropdown-toggle" data-toggle="dropdown">
-									<i class="icon-circle light-green middle"></i>
-									&nbsp;
-									<span class="white">{{=truncate_words(pessoa.pessoa.nome,2)}}</span>
-								</a>
-
-								<ul class="align-left dropdown-menu dropdown-caret dropdown-lighter">
-									<li class="dropdown-header"> Mudar Status </li>
-
-									<li>
-										<a href="#">
-											<i class="icon-circle green"></i>
-											&nbsp;
-											<span class="green">Disponível</span>
-										</a>
-									</li>
-
-									<li>
-										<a href="#">
-											<i class="icon-circle red"></i>
-											&nbsp;
-											<span class="red">Ocupado</span>
-										</a>
-									</li>
-
-									<li>
-										<a href="#">
-											<i class="icon-circle grey"></i>
-											&nbsp;
-											<span class="grey">Invisível</span>
-										</a>
-									</li>
-								</ul>
-							</div>
-						</div>
 					</div>
 
 					<div class="space-6"></div>
@@ -61,15 +21,10 @@
 								Enviar convite de amizade
 							</a>
 
-							<a class="btn btn-link" href="#">
+							<a class="btn btn-link" href="{{=URL('default','send_message',vars={'destinatario':pessoa.pessoa.id})}}">
 								<i class="icon-envelope bigger-120 pink"></i>
 								Enviar mensagem
 							</a>
-
-<!--							<a class="btn btn-link" href="#">-->
-<!--								<i class="icon-globe bigger-125 blue"></i>-->
-<!--								www.alexdoe.com-->
-<!--							</a>-->
 						</div>
 
 						<div class="space-6"></div>
@@ -83,9 +38,6 @@
 								<i class="middle icon-twitter-sign icon-2x light-blue"></i>
 							</a>
 
-							<a href="#" class="tooltip-error" title="" data-original-title="Visit my Pinterest">
-								<i class="middle icon-pinterest-sign icon-2x red"></i>
-							</a>
 						</div>
 					</div>
 
@@ -109,12 +61,14 @@
 
 					<div class="hr hr16 dotted"></div>
 				</div>
-
-				<div class="col-xs-12 col-sm-9">
+                <div class="col-xs-12 col-sm-9">
+					<h4 class="blue">
+						<span class="middle">{{=pessoa.pessoa.nome}}</span>
+					</h4>
                     {{if action in ('criar','editar'):}}
                       {{=form}}
                     {{else:}}
-                      {{for field,value in render_fields(pessoa,db,exclude=['foto','miniatura','original_id','sobremim']):}}
+                      {{for field,value in render_fields(pessoa,db,exclude=['foto','miniatura','original_id','data_nascimento','rg','cpf','sexo','ra']):}}
                         {{=DIV(DIV( DIV(field,_class="profile-info-name"),
                                   DIV(value,_class="profile-info-value"),
                                   _class="profile-info-row"

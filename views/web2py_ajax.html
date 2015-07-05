@@ -1,92 +1,110 @@
+<link rel="shortcut ace-icon fa" href="{{=URL('static','images/favace-icon fa.ico')}}" type="image/x-ace-icon fa">
+<link rel="apple-touch-ace-icon fa" href="{{=URL('static','images/favace-icon fa.png')}}">
+
+<link rel="stylesheet" href="{{=URL('static','css/extra.css')}}" />
+
+<!-- bootstrap & fontawesome -->
+<link rel="stylesheet" href="{{=URL('static','assets/css/bootstrap.css')}}" />
+<link rel="stylesheet" href="{{=URL('static','assets/css/font-awesome.css')}}" />
+
+
+<link rel="stylesheet" href="{{=URL('static','assets/css/jquery-ui.custom.css')}}" />
+<link rel="stylesheet" href="{{=URL('static','assets/css/chosen.css')}}" />
+<link rel="stylesheet" href="{{=URL('static','assets/css/datepicker.css')}}" />
+<link rel="stylesheet" href="{{=URL('static','assets/css/bootstrap-timepicker.css')}}" />
+<link rel="stylesheet" href="{{=URL('static','assets/css/daterangepicker.css')}}" />
+<link rel="stylesheet" href="{{=URL('static','assets/css/bootstrap-datetimepicker.css')}}" />
+<link rel="stylesheet" href="{{=URL('static','assets/css/colorpicker.css')}}" />
+
+<!-- page specific plugin styles -->
+
+<!-- text fonts -->
+<link rel="stylesheet" href="{{=URL('static','assets/css/ace-fonts.css')}}" />
+
+<!-- ace styles -->
+<link rel="stylesheet" href="{{=URL('static','assets/css/ace.css')}}" class="ace-main-stylesheet" id="main-ace-style" />
+<link rel="stylesheet" href="{{=URL('static','assets/css/ace-skins.css')}}" class="ace-main-stylesheet" id="main-ace-style" />
+
+<!--[if lte IE 9]>
+    <link rel="stylesheet" href="{{=URL('static','assets/css/ace-part2.css')}}" class="ace-main-stylesheet" />
+<![endif]-->
+
+<!--[if lte IE 9]>
+  <link rel="stylesheet" href="{{=URL('static','assets/css/ace-ie.css')}}" />
+<![endif]-->
+
+<!-- inline styles related to this page -->
+
+<!-- ace settings handler -->
+<script src="{{=URL('static','assets/js/ace-extra.js')}}"></script>
+<!--[if lte IE 8]>
+ <script src="{{=URL('static','assets/js/html5shiv.js') }}"></script>
+ <script src="{{=URL('static','assets/js/respond.js') }}"></script>
+<![endif]-->
+
+
 {{
 
-response.files.insert(0,URL('static','assets/js/ace-extra.min.js'))
-response.files.insert(1,URL('static','assets/js/bootstrap.min.js'))
-response.files.insert(3,URL('static','assets/js/uncompressed/bootstrap-typeahead.js'))
-response.files.insert(4,URL('static','assets/js/jquery-ui-1.10.3.full.min.js'))
-response.files.append(URL('static','assets/js/jquery.ui.touch-punch.min.js'))
-response.files.append(URL('static','assets/js/jquery.slimscroll.min.js'))
-response.files.append(URL('static','assets/js/jquery.easy-pie-chart.min.js'))
-response.files.append(URL('static','assets/js/jquery.sparkline.min.js'))
-#response.files.append(URL('static','assets/js/flot/jquery.flot.min.js'))
-#response.files.append(URL('static','assets/js/flot/jquery.flot.pie.min.js'))
-#response.files.append(URL('static','assets/js/flot/jquery.flot.resize.min.js'))
+#<!-- page specific plugin scripts -->
 
-##----------------wysigwyg----------------------------------------------
-response.files.append(URL('static','assets/js/markdown/markdown.min.js'))
-response.files.append(URL('static','assets/js/markdown/bootstrap-markdown.min.js'))
-response.files.append(URL('static','assets/js/jquery.hotkeys.min.js'))
-response.files.append(URL('static','assets/js/bootstrap-wysiwyg.min.js'))
-response.files.append(URL('static','assets/js/bootbox.min.js'))
+response.files.append(URL('static','assets/js/jquery-ui.custom.js'))
+response.files.append(URL('static','assets/js/jquery.ui.touch-punch.js'))
+response.files.append(URL('static','assets/js/jquery.easypiechart.js'))
+response.files.append(URL('static','assets/js/jquery.sparkline.js'))
+response.files.append(URL('static','assets/js/flot/jquery.flot.js'))
+response.files.append(URL('static','assets/js/flot/jquery.flot.pie.js'))
+response.files.append(URL('static','assets/js/flot/jquery.flot.resize.js'))
+#response.files.append(URL('static','assets/js/typeahead.jquery.js'))
+#response.files.append(URL('static','js/bloodhound.js'))
+response.files.append(URL('static','js/typeahead.bundle.js'))
 
-##-----------------forms-------------------------------------------------
 
-response.files.append(URL('static','assets/js/chosen.jquery.min.js'))
-response.files.append(URL('static','assets/js/date-time/moment.min.js'))
-response.files.append(URL('static','assets/js/fuelux/fuelux.spinner.min.js'))
-response.files.append(URL('static','assets/js/date-time/bootstrap-datepicker.min.js'))
-#response.files.append(URL('static','assets/js/date-time/bootstrap-timepicker.min.js'))
+#<!-- ace scripts -->
+
+#response.files.append(URL('static','assets/js/markdown/markdown.js'))
+#response.files.append(URL('static','assets/js/markdown/bootstrap-markdown.js'))
+#response.files.append(URL('static','assets/js/jquery.hotkeys.js'))
+response.files.append(URL('static','assets/js/ace/elements.scroller.js'))
+response.files.append(URL('static','assets/js/ace/elements.colorpicker.js'))
+response.files.append(URL('static','assets/js/ace/elements.fileinput.js'))
+response.files.append(URL('static','assets/js/bootstrap-wysiwyg.js'))
+response.files.append(URL('static','assets/js/ace/elements.wysiwyg.js'))
+response.files.append(URL('static','assets/js/ace-elements.js'))
+
+
+response.files.append(URL('static','assets/js/ace/elements.spinner.js'))
+response.files.append(URL('static','assets/js/ace/elements.treeview.js'))
+response.files.append(URL('static','assets/js/ace/elements.wizard.js'))
+response.files.append(URL('static','assets/js/ace/elements.aside.js'))
+response.files.append(URL('static','assets/js/ace/ace.js'))
+response.files.append(URL('static','assets/js/ace/ace.ajax-content.js'))
+response.files.append(URL('static','assets/js/ace/ace.touch-drag.js'))
+response.files.append(URL('static','assets/js/ace/ace.sidebar.js'))
+response.files.append(URL('static','assets/js/ace/ace.sidebar-scroll-1.js'))
+response.files.append(URL('static','assets/js/ace/ace.submenu-hover.js'))
+#response.files.append(URL('static','assets/js/ace/ace.widget-box.js'))
+response.files.append(URL('static','assets/js/ace/ace.settings.js'))
+response.files.append(URL('static','assets/js/ace/ace.settings-rtl.js'))
+response.files.append(URL('static','assets/js/ace/ace.settings-skin.js'))
+response.files.append(URL('static','assets/js/ace/ace.widget-on-reload.js'))
+response.files.append(URL('static','assets/js/ace/ace.searchbox-autocomplete.js'))
+
+response.files.append(URL('static','assets/js/jquery.nestable.js'))
+
+
+
+response.files.append(URL('static','assets/js/date-time/moment.js'))
+response.files.append(URL('static','assets/js/fuelux/fuelux.spinner.js'))
+response.files.append(URL('static','assets/js/date-time/bootstrap-datepicker.js'))
+#response.files.append(URL('static','assets/js/date-time/bootstrap-timepicker.js'))
 
 response.files.append(URL('static','js/moment.min.js'))
 response.files.append(URL('static','js/bootstrap-datetimepicker.min.js'))
 response.files.append(URL('static','js/locales/bootstrap-datetimepicker.pt-BR.js'))
 response.files.append(URL('static','css/bootstrap-datetimepicker.min.css'))
+response.files.append(URL('static','js/jquery.slimscroll.min.js'))
 
-response.files.append(URL('static','assets/js/date-time/daterangepicker.min.js'))
-response.files.append(URL('static','assets/js/bootstrap-colorpicker.min.js'))
-response.files.append(URL('static','assets/js/jquery.knob.min.js'))
-response.files.append(URL('static','assets/js/jquery.autosize.min.js'))
-response.files.append(URL('static','assets/js/jquery.inputlimiter.1.3.1.min.js'))
-response.files.append(URL('static','assets/js/jquery.maskedinput.min.js'))
-response.files.append(URL('static','assets/js/bootstrap-tag.min.js'))
-
-response.files.append(URL('static','assets/css/chosen.css'))
-response.files.append(URL('static','assets/css/datepicker.css'))
-response.files.append(URL('static','assets/css/bootstrap-timepicker.css'))
-response.files.append(URL('static','assets/css/daterangepicker.css'))
-response.files.append(URL('static','assets/css/colorpicker.css'))
-
-
-response.files.append(URL('static','assets/js/select2.js'))
-response.files.append(URL('static','assets/js/select2_locale_pt-BR'))
-response.files.append(URL('static','assets/js/jquery.dataTables.min.js'))
-response.files.append(URL('static','assets/js/jquery.dataTables.bootstrap.js'))
-		
-		
-
-response.files.append(URL('static','assets/css/select2-bootstrap.css'))
-response.files.append(URL('static','assets/css/jquery-ui-1.10.3.full.min.css'))
-
-##-------------------ace scripts---------------------------------------
-
-response.files.append(URL('static','assets/js/ace-elements.min.js'))
-response.files.append(URL('static','assets/js/ace.min.js'))
-
-##-------------------conf-files---------------------------------------
-
-response.files.append(URL('static','assets/js/typeahead-conf.js'))
-response.files.append(URL('static','assets/js/wysiwyg-conf.js'))
-
-response.files.append(URL('static','assets/js/file-ace-conf.js'))
-response.files.append(URL('static','assets/css/bootstrap.min.css'))
-
-##---------------------web2py definitions -----------------------------
-
-response.files.append(URL('static','js/web2py.js'))
-response.files.append(URL('static','js/pagenavs.js'))
-
-
-##---------------------fonts-------------------------------
-response.files.append(URL('static','assets/css/font-awesome.min.css'))
-
-##-------------------ace styles----------------------------
-response.files.append(URL('static','assets/css/ace-fonts.css'))
-response.files.append(URL('static','assets/css/uncompressed/ace.css'))
-response.files.append(URL('static','assets/css/ace-rtl.min.css'))
-response.files.append(URL('static','assets/css/ace-skins.min.css'))
-
-
-#response.files.append(URL('static','css/web2py_bootstrap.css'))
+response.files.append(URL('static','assets/js/date-time/daterangepicker.js'))
 
 response.include_meta()
 
@@ -110,6 +128,24 @@ for static in css_s:
     =XML("%s\n" %static.xml())
     pass
 }}
+
+
+
+<!--[if IE 7]>
+  {{=LINK( _href=URL('static','assets/css/font-awesome-ie7.css'), _rel="stylesheet", _type="text/css")}}
+<![endif]-->
+
+<!--[if lte IE 8]>
+  {{=LINK( _href=URL('static','assets/css/ace-ie.css'), _rel="stylesheet", _type="text/css")}}
+<![endif]-->
+
+<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!--[if lt IE 9]>
+{{=SCRIPT( _src=URL('static','assets/js/html5shiv.js'), _type="text/javascript")}}
+{{=SCRIPT( _src=URL('static','assets/js/respond.js'), _type="text/javascript")}}
+<![endif]-->
+
+
 
 <script type="text/javascript"><!--
     // These variables are used by the web2py_ajax_init function in web2py_ajax.js (which is loaded below).

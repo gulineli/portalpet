@@ -2,6 +2,7 @@
 
 grupo_record = db(db.grupo.slug==request.args(0)).select().first()
 
+
 if grupo_record:
     response.breadcrumbs.append((URL(request.application,request.controller,'grupo',args=(grupo_record.slug,)), grupo_record.nome))
     response.subtitle = grupo_record.nome
@@ -45,6 +46,7 @@ def junte_se_a_nos():
     grupo = grupo_record or redirect(URL('index'))
     pessoa = get_pessoa(request,db,auth,force_auth=True)
 
+    print grupo
 #    if pessoa.is_integrante():
 #        pass
         #return HttpResponseRedirect(reverse('grupo_detail',args=(pessoa.get_grupo().slug,)) )
@@ -52,7 +54,7 @@ def junte_se_a_nos():
     edicao=True
     submit_value = 'Enviar'
 
-    juntarse_grupo = db((db.juntarse_grupo.grupo_id==grupo.id) & (db.juntarse_grupo.pessoa_id==pessoa.id)).select().first()
+    juntarse_grupo = db((db.juntarse_grupo.grupo_id==grupo.id) & (db.juntarse_grupo.pessoa_id==pessoa.pessoa.id)).select().first()
     pendedform_id = juntarse_grupo.form_id if juntarse_grupo else None
 
     pendedform = PendForm(db,
@@ -64,7 +66,7 @@ def junte_se_a_nos():
         response.flash = u"Sua solicitação já foi enviada. Você poderá modificá-la abaixo ou então aguardar até que um dos integrantes de seu grupo valide sua solicitação. Para cancelar a sua solicitação, clique em 'Cancelar'."
     form = pendedform.form
     form.vars.grupo_id=grupo.id
-    form.vars.pessoa_id=pessoa.id
+    form.vars.pessoa_id=pessoa.pessoa.id
 
     if form.validate():
         from general_utils import mail_schedule
@@ -120,7 +122,7 @@ def integrantes():
 
     integrantes = db(integrante_query & tipo_query ).select(orderby=(~db.integrante.tipo,db.pessoa.nome),groupby=db.pessoa.id)  ## distinct=db.pessoa.id,
     response.title='Integrantes do grupo' if tipo=='' else 'Egressos do Grupo'
-    
+
     return locals()
 
 
@@ -157,9 +159,9 @@ def nova_reuniao():
                      args=(grupo.slug,reunioes_set.select(db.reuniao.ALL).first().hash)) )
 
     response.title="Iniciando reunião"
-    
+
     db.reuniao.pauta_id.requires=IS_IN_DB(db(db.pauta.grupo_id==grupo.id),'pauta.id',db.pauta._format)
-    
+
     form = SQLFORM(db.reuniao,fields=['pauta_id'],formstyle='bootstrap' )
     (form.vars.grupo_id,form.vars.secretario_id) = (grupo.id,pessoa.pessoa.id)
 
@@ -178,7 +180,7 @@ def reuniao():
     grupo = grupo_record or redirect(URL('index'))
     reuniao = db(db.reuniao.hash==request.args(1)).select().first() or redirect(URL('grupos','reunioes',args=(grupo.slug,)))
     response.title = db.reuniao._format(reuniao)
-    
+
 #    if reuniao.termino:
 #        from reuniao_utils import reuniao_create_arquivo
 #        pdf = reuniao_create_arquivo(db,request,response,reuniao)
@@ -186,16 +188,16 @@ def reuniao():
 #        response.headers['Content-Disposition'] = \
 #                'filename=%s_%s.pdf' %(reuniao.number(),reuniao.inicio.year)
 #        return pdf
-        
+
 #    if reuniao.termino:
 #        return redirect(URL('grupos','reunioes', args=(grupo.slug,reuniao.hash)) )
 
     participantes = reuniao.participantes_set().select()
-    
+
     ##Configurando as pautas que devem aparecer
     pautas_list = request.get_vars.get('pautas',[reuniao.pauta_id])
     initial = simplejson.dumps({'pautas':pautas_list})
-    
+
     #Tópicos pendentes
     topicos_em_pauta = reuniao.topicos_set()._select(db.topico.id)
     topicos_pendentes = db((db.topico.grupo_id==grupo.id) & (db.topico.encerrado==False) &
@@ -313,16 +315,16 @@ def reunioes():
 
 def assunto():
     import gluon.contrib.simplejson as sj
-    
+
     max_rows = int(request.vars.get('max_rows','15'))
     search_key = request.vars.get('search_key','')
     grupo_id = request.vars.get('grupo_id','')
-    
-    
+
+
     atividade_ids = db(db.atividade.nome.contains(search_key))._select(db.atividade.id)
-    
+
     assuntos = db(( (db.assunto.table_name=='atividade') & (db.assunto.object_id.belongs(atividade_ids)) ) |
-                  (db.assunto.assunto.contains(search_key)) & (db.assunto.grupo_id==grupo_id) 
+                  (db.assunto.assunto.contains(search_key)) & (db.assunto.grupo_id==grupo_id)
                  ).select(
                          limitby=(0,max_rows),
                          orderby=db.assunto.assunto).render()
@@ -332,10 +334,10 @@ def assunto():
                 'value': a.assunto or 11
             } for a in assuntos
         ])
-    
+
     return results
-    
-    
+
+
 def jeditable():
     from myutils import jeditable_func
     return jeditable_func(globals(),request)

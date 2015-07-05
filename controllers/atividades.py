@@ -6,6 +6,33 @@ if atividade_record:
     response.breadcrumbs = response.breadcrumbs or []
     response.breadcrumbs.append((URL(request.application,request.controller,'atividade',args=(atividade_record.slug,)), atividade_record.nome))
 
+
+@breadcrumb()
+def index():
+    
+    response.title = 'Atividades Cadastradas'
+    response.subtitle = ''
+    
+    exclude_id = db(db.atividade_subatividades.subatividade_id==db.atividade.id)._select(db.atividade.id)
+    
+    s = db((db.atividade.divulgar==True) & \
+           (db.atividade.tipo.belongs(['ev','pa','se','cu','vi']) ) & \
+           (db.atividade_periodo.atividade_id==db.atividade.id) & \
+           ~(db.atividade.id.belongs(exclude_id)) )
+           
+    inicio = db.atividade_periodo.inicio.min()
+    paginate = Paginate(request,response,s,
+                        select_args=[db.atividade.ALL,db.atividade_periodo.ALL,inicio],
+                        select_kwargs={'orderby':~db.atividade_periodo.inicio,
+                                       'groupby':db.atividade.id},
+                        itens_page=16,
+                        search_url=URL('default','get_atividade') )
+                        
+    atividades = paginate.rows
+
+    return locals()
+
+    
 def atividade():
     from myutils import render_fields
     from atividade_utils import estagio_
@@ -31,7 +58,7 @@ def atividade():
         
         if e=='2':
             form[0].insert(0,LOAD('atividades','get_periodos.load',args=(atividade.slug,),
-                                  _class="form-group") )
+                                  _class="form-group"))#,ajax=True) )
             
             
         if form.process().accepted:
@@ -50,12 +77,45 @@ def atividade():
 
 
 def get_periodos():
+    from custon_widgets import MultipleOptionsWidgetFK
     atividade = atividade_record or redirect(URL('index'))
-    periodos=db(db.atividade_periodo.atividade_id==atividade.id).select()
-    
+    periodos=db(db.atividade_periodo.atividade_id==atividade.id).select(orderby=db.atividade_periodo.inicio)
+    m = MultipleOptionsWidgetFK(url_args=('atividades','subatividade'),
+                                url_kwargs=dict(args=(atividade.slug,) ) )
+#    response.files.append(URL('static','css/colorbox.css'))
+#    response.files.append(URL('static','js/jquery.colorbox-min.js'))
+#    response.files.append(URL('static','js/RelatedObjectLookups.js'))
     return locals()
     
 
+def periodo():
+    from gluon.contrib import simplejson
+    if request.vars.remove:
+        a = db(db.atividade_periodo.id==request.vars.id).delete()
+        print a,request.vars.id
+        return simplejson.dumps({'success':True})    
+
+    
+    from datetime import datetime
+    
+    atividade = atividade_record or redirect(URL('index'))
+    i = datetime.strptime(request.vars.inicio,"%s" %T("%Y-%m-%d %H:%M"))
+    t = datetime.strptime(request.vars.termino,"%s" %T("%Y-%m-%d %H:%M"))
+    
+    if i > t:
+        aux = i
+        i = t
+        t = aux
+    
+    p = db.atividade_periodo.update_or_insert(db.atividade_periodo.id==request.vars.id,
+                    atividade_id=atividade.id,
+                    inicio=i,
+                    termino=t)
+    
+    return simplejson.dumps(dict(id=p,success=True))
+        
+        
+    
 def visao_geral():
     atividade = atividade_record or redirect(URL('index'))
     
@@ -225,6 +285,8 @@ def get_pessoas_inscricao():
 #                    'class':"disabled"}
                     
     return sj.dumps(pessoas_list)
+    
+    
 ##Relativo a página pessoal
 def pessoa_atividades():
     from pessoa_utils import get_pessoa
@@ -241,27 +303,13 @@ def pessoa_atividades():
     ##Atividades Previstas
     ativ_prev = db( q_ativ & (db.atividade_periodo.inicio >= request.now) ).select(groupby=db.atividade.id) 
     ativ_real = db( q_ativ & (db.atividade_periodo.inicio < request.now) ).select(groupby=db.atividade.id) 
-
-#    atividade_type = ContentType.objects.get_for_model(Atividade)
-#    ##Atividades Organizadas pela pessoa
-#    lotacoes = Lotacao.objects.filter(pessoa=pessoa,organizacao__content_type=atividade_type)
-
-#    ativ_div = Atividade.objects.filter(periodos__inicio__gte=datetime.today(),
-#                                        grupo__peoplegroups__user = request.user,
-#                                        atividade__isnull=True).distinct()
+    ativ_orga = db( (db.atividade_organizador.atividade_id==db.atividade.id) & \
+                    (db.atividade_organizador.pessoa_id==pessoa.pessoa.id)
+                 ).select(groupby=db.atividade.id) 
 
 #    if ativ_p.filter(confirmado=False,atividade__conf=True).count(): # Verifica se todas as atividades ja foram ou nao confirmadas
 #        confirmacao='pendente'
 
-#    if request.method=="POST":
-#        postDict = request.POST.copy()
-
-#        for key, value in postDict.items():
-#            if key <>'salvar_prev':
-#                a = Inscrito.objects.get(id = int(key))
-#                a.data_conf = datetime.now()
-#                a.save()
-#                return HttpResponseRedirect(reverse('mostra_atividades_pessoa',args=(pessoa.slug,)) )
     return locals()
 
 
@@ -327,12 +375,13 @@ def resumo_participacao():
     
 def pessoa_artigos():
     from pessoa_utils import get_pessoa
-    from atividade_utils import versao_status,versao_editar,artigo_avaliacao_liberada,versao_prazo
     
-    pessoa = get_pessoa(request,db,auth)
-    pessoa = pessoa or redirect
+    pessoa = get_pessoa(request,db,auth) or redirect
     pessoal = pessoa == get_pessoa(request,db,auth,force_auth=True)
-    artigos = db(db.artigo.dono_id==pessoa.pessoa.id).select()
+    
+    artigos = db(((db.autor.pessoa_id==pessoa.pessoa.id) & \
+                 (db.versao.id==db.autor.versao_id) &\
+                 (db.artigo.id==db.versao.artigo_id))).select(db.artigo.ALL,groupby=db.artigo.id)
 
     return locals()
 

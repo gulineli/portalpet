@@ -10,7 +10,7 @@ db.define_table('arquivo_grupo',
     Field('grupo_id','reference grupo'),
     Field('arquivo_id','reference arquivo'),
 #    common_filter = lambda query: db.arquivo_grupo.arquivo_id==db.arquivo.id,
-    migrate=MIGRATE)
+)
 
 
 db.define_table('assunto',
@@ -19,31 +19,31 @@ db.define_table('assunto',
     Field('assunto','string'),
     Field('grupo_id','reference grupo'),
     format="%(assunto)s",
-    migrate=MIGRATE)
+)
 
 
 db.define_table('automatizedpeoplegroup',
     Field('grupo_id','integer'),
     Field('peoplegroup_id','integer'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('automatizedpeoplegroup_filtros',
     Field('automatizedpeoplegroup_id','integer'),
     Field('queryfiltro_id','integer'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('funcao',
     Field('grupo_id','integer'),
     Field('funcao','string'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('grupo_peoplegroups',
     Field('grupo_id','integer'),
     Field('grupousergroup_id','integer'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('juntarse_grupo',
@@ -51,33 +51,33 @@ db.define_table('juntarse_grupo',
     Field('pessoa_id','reference pessoa',required=True),
     Field('form_id','reference pendedform',required=True),
     Field('rejeitada','boolean',default=False),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('queryfiltro',
     Field('nome','string'),
     Field('field','string'),
     Field('value','string'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('responsavel',
     Field('funcao_id','integer'),
     Field('descricao','text'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('responsavel_responsaveis',
     Field('responsavel_id','integer'),
     Field('pessoa_id','integer'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('pauta',
     Field('nome','string',required=True),
     Field('grupo_id','reference grupo',required=True,writable=False,readable=False),
     format="%(nome)s",
-    migrate=MIGRATE)
+)
 
 
 db.define_table('post',
@@ -87,7 +87,7 @@ db.define_table('post',
     Field('texto','text',required=True,widget=bootstrap_editor,requires=IS_NOT_EMPTY()),
     Field('closed','boolean',default=False),
 #    format="%(topico_id)s",
-    migrate=MIGRATE)
+)
 
 
 db.define_table('reuniao',
@@ -105,19 +105,19 @@ db.define_table('reuniao',
     Field.Method('participantes_set',lambda row,extra_query=None: reuniao_participantes_set(db,row,extra_query) ),
 
     format=lambda r: u"Reunião nº %s/%s" %(r.number(),r.inicio.year),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('reuniao_ausentes',
     Field('reuniao_id','reference reuniao',required=True),
     Field('pessoa_id','reference pessoa',required=True),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('reuniao_topicos',
     Field('reuniao_id','reference reuniao',required=True),
     Field('topico_id','reference topico',required=True),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('topico',
@@ -141,16 +141,16 @@ db.define_table('topico',
     Field.Virtual('status_class',lambda row: topico_status_class(row.topico)),
     Field.Virtual('status',lambda row: topico_status(row.topico)),
     format=lambda r: "%s - %s" %(r.assunto_id.assunto, r.texto),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('topico_pautas',
     Field('topico_id','reference topico',required=True),
     Field('pauta_id','reference pauta',required=True),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('topico_responsaveis',
     Field('topico_id','reference topico',required=True),
     Field('pessoa_id','reference pessoa',required=True),
-    migrate=MIGRATE)
+)

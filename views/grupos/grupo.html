@@ -8,7 +8,11 @@
   <div class="table-responsive">
   {{=TABLE(*render_fields(grupo,db,exclude=['foto'],tables=['grupo']),_class="table table-striped table-bordered")}}
   {{if True:}}
-    {{=A('Modificar dados',_href=URL('grupos','grupo',args=(grupo.slug,),vars=dict(action='editar')),_class="btn btn-primary pull-right")}}
+    <a href="{{=URL('grupos','grupo',args=(grupo.slug,), vars=dict(action='editar'))}}"
+        class="btn btn-primary pull-right">
+        <i class="ace-icon fa fa-edit"></i>
+        Modificar dados
+    </a>
     {{pass}}
   {{pass}}
   </div>

@@ -3,14 +3,14 @@ from gluon import URL,XML,I,current,redirect
 from custon_helper import AUTORIZED_MENU
 from myutils import date2str
 
-from datetime import datetime
+from datetime import datetime,timedelta
 
 
 ## ordem_inscricao - insc_number
 
 __all__ = ['atividade_menu','ordem_inscricao','frequencia_participacao','certifica_inscrito','pessoa_get_certificados',
            'num_inscritos_','num_presenca','listas_feitas','periodos_shortcut','atividade_inicio','atividade_termino',
-           'em_periodo_inscricao','data_limite_avaliacao',
+           'data_limite_avaliacao',
            'atividade_areas_conhecimento','data_limite_submissao','versao_dataRes','versao_editar','versao_status',
            'versao_prazo','artigo_avaliacao_liberada']
 
@@ -56,13 +56,14 @@ estagio_ = {
 #                       'atividade_subatividades':['subatividade_id'],
              'mensagem':"Este é o mínimo que precisa definir para criar uma atividade" },
 
-       '2':{'fields':['foto','descricao',],
+       '2':{'fields':['id'],
+            'mensagem':"Informe os periodos que esta atividade será realizada" },
+       '3':{'fields':['foto','descricao',],
             'mensagem':"Descreva ao máximo sua atividade para que o usuário \
              encontre as informações que procura. Note que este campo \
              será utilizado com página inicial de sua atividade. Você pode inserir imagens\
              links para outras páginas e até mesmo vídeos. Aproveite!" },
-
-       '3':{'fields':['requer_inscricao','valor','instrucoes','msgonerror','tutorial','tutorial_url',
+       '4':{'fields':['requer_inscricao','valor','instrucoes','msgonerror','tutorial','tutorial_url',
 #                      'groups',
                       'permuta','num_max','espera','confirmacao','insc_mestra','insc_online',
                       'inicio_inscricao','termino_inscricao','inicio_confirmacao',
@@ -70,11 +71,11 @@ estagio_ = {
             'mensagem':"Defina as estratégias de inscrições para esta atividade.\
                             Em caso de dúvidas consulte os balões dos campos." },
 
-       '4':{'fields':['num_chamadas','certifica','frequencia_minima','certificados_impressos'],
+       '5':{'fields':['num_chamadas','certifica','frequencia_minima','certificados_impressos'],
             'mensagem':"Defina as condições para certificar um inscrito na atividade.\
                             Em caso de dúvidas consulte os balões dos campos." },
 
-       '5':{'fields':['aceita_artigos',
+       '6':{'fields':['aceita_artigos',
 #                      'avaliadores',
                       'ficha_avaliacao',
                       #'autores',
@@ -256,10 +257,10 @@ def atividade_termino(db,atividade):
 def data_limite_avaliacao(db,atividade):
     atividade_congresso = db(db.atividade_congresso.atividade_id==atividade.id).select().first()
     if atividade_congresso:
-        return (atividade_congresso.data_limite_submissao or atividade_inicio(atividade) + \
+        return (atividade_congresso.data_limite_submissao or atividade_inicio(db,atividade) + \
                 timedelta(days=atividade_congresso.dias_avaliacao or 0) )
     else:
-        return datetime.date.today()
+        return datetime.today().date()
             
 
 def atividade_areas_conhecimento(db,atividade):
@@ -279,27 +280,30 @@ def data_limite_submissao(db,atividade):
 def versao_dataRes(db,versao):
     artigo = versao.artigo_id
     atividade = artigo.atividade_id
+    avaliacao = versao.avaliacao_id
     data_base = None
-    if versao.avaliacao and versao.avaliacao.liberar:
-        data_base = versao.avaliacao.data_avaliacao
+    if avaliacao and avaliacao.liberar:
+        data_base = avaliacao.data_avaliacao
     elif versao.revisao > 0:
         versao_anterior = db((db.versao.artigo_id==artigo.id) & (db.versao.revisao==versao.revisao - 1)).select().first()
-        data_base = versao_anterior.avaliacao.data_avaliacao
+        data_base = versao_anterior.avaliacao_id.data_avaliacao
 
     if data_base:
         return data_base + timedelta(days = atividade.prazo_correcao or 0)
+        
     return data_limite_avaliacao(db,atividade)
 
 
 def versao_editar(db,versao):
-    if versao.avaliacao_id and versao.avaliacao_id.liberar:
-        if versao.avaliacao_id.parecer=='am':
-            if date.today() <= versao_dataRes(db,versao):
-                return True
+    if versao:
+        if versao.avaliacao_id and versao.avaliacao_id.liberar:
+            if versao.avaliacao_id.parecer=='am':
+                if datetime.today().date() <= versao_dataRes(db,versao):
+                    return True
 
-    elif date.today() <= (data_limite_submissao(db,versao.artigo_.atividade) or date.today() ):
-        if not self.enviado:
-            return True
+        elif datetime.today().date() <= (data_limite_submissao(db,versao.artigo_id.atividade_id) or datetime.today().date() ):
+            if not versao.enviado:
+                return True
             
 
 def versao_status(db,versao,editar=None):
@@ -330,7 +334,7 @@ def artigo_avaliacao_liberada(db,artigo,corrente=None):
         if corrente.revisao > 0 and (not corrente.avaliacao_id or \
                 corrente.avaliacao_id and not corrente.avaliacao_id.liberar):
             
-            versaoAnterior = db((db.versao.artigo_id==artigo.id) & (db.versao.revisao==versao.revisao - 1)).select().first()
-            return versaoAnterior.avaliacao
+            versaoAnterior = db((db.versao.artigo_id==artigo.id) & (db.versao.revisao==corrente.revisao - 1)).select().first()
+            return versaoAnterior.avaliacao_id
         elif corrente.avaliacao_id and corrente.avaliacao_id.liberar:
             return corrente.avaliacao_id

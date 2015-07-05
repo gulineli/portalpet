@@ -62,14 +62,13 @@ def render_fields(row,db,tables=[],exclude=[]):
             render +=render_fields(row[table],db,tables=[table],exclude=exclude)
         else:
             for field in db.get(table).fields:
-                if db[table][field].readable and not field=='id' and not field in exclude:
-#                    if db[table][field].represent:
-#                        
-#                        print field,table
-#                        render.append((db[table][field].label,
-#                                       db[table][field].represent(row[field]) or '-'))
-#                    else:
-                    render.append((db[table][field].label,XML(row[field]) or '-'))
+                if db[table][field].readable and not field=='id' and not field in exclude and row[field]:
+                    if db[table][field].represent:
+                        
+                        render.append((db[table][field].label,
+                                       db[table][field].represent(row[field],row) or '-'))
+                    else:
+                        render.append((db[table][field].label,XML(row[field] or '-' ) ))
     return render
 
 
@@ -77,12 +76,9 @@ def copydata(src, dest,db,tables=[]):
     ''' copy data for the listed from src to dest, only if they exist in the source
      it is chiefly used to populate fields in a created form
      Original from Jay Kelnar '''
-#    render=[]
     tables = [item  for item in src if isinstance(src[item],type(src))] if not tables else tables
 
     for table in tables:
-#        copydata(src[table], form.vars, t.fields)
-
         for k in db.get(table).fields:
             dest[k] = src[table][k]
     return dict()

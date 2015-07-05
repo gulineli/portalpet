@@ -20,6 +20,7 @@
 
 {{
   from reuniao_utils import topico_status,topico_status_class
+  from myutils import regroup
   topico_set = reuniao.topicos_set()
   topicos = topico_set.select(db.topico.ALL)
 }}
@@ -64,7 +65,7 @@
         <td>
           <h5>
             <span id="db-reuniao-inicio-{{=reuniao.id}}" class="edit_date_time" title="clique para editar">
-              {{=datetime2str(reuniao.inicio)}}
+              {{=date2str(reuniao.inicio)}}
             </span>
           </h5>
         </td>
@@ -74,7 +75,7 @@
         <td>
           <h5>
             <span id="db-reuniao-termino-{{=reuniao.id}}" class="edit_date_time" title="clique para editar">
-              {{=datetime2str(reuniao.termino or request.now)}}
+              {{=date2str(reuniao.termino or request.now)}}
             </span>
           </h5>
         </td>

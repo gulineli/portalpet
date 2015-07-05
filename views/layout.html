@@ -43,13 +43,13 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 		<![endif]-->
 	</head>
 
-	<body>
-		<div class="navbar navbar-default" id="navbar">
-			<div class="navbar-container container" id="navbar-container">
+	<body class="no-skin">
+		<div class="navbar navbar-default navbar-fixed-top" id="navbar">
+			<div class="navbar-container" id="navbar-container">
 				<div class="navbar-header pull-left">
 					<a href="{{=URL('default','index.html')}}" class="navbar-brand">
 						<small>
-							<i class="icon-leaf"></i>
+							<i class="ace-icon fa fa-leaf"></i>
 							Portal PET
 						</small>
 					</a><!-- /.brand -->
@@ -57,40 +57,46 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 
 				<div class="navbar-header pull-right" role="navigation">
 					<ul class="nav ace-nav">
-					
+
 					    <li class="blue">
 							<a data-toggle="dropdown" class="dropdown-toggle" href="#">
-								<i class="icon-lock"></i>
+								<i class="ace-icon fa fa-lock"></i>
 								<span class="badge badge-grey">Administração</span>
 							</a>
 
 							<ul class="pull-right dropdown-navbar dropdown-menu dropdown-caret dropdown-close">
 								<li class="dropdown-header">
-									<i class="icon-lock"></i>
+									<i class="ace-icon fa fa-lock"></i>
 									Administração do sistema
 								</li>
 
 								<li>
 									<a href="{{=URL('portalpet','appadmin','index')}}" target="_blank">
-										<i class="icon-hdd"></i>
+										<i class="ace-icon fa fa-hdd"></i>
 										Database
 									</a>
 								</li>
 								<li>
 									<a href="{{=URL('admin','default','errors',args=('portalpet'))}}" target="_blank">
-										<i class="icon-hdd"></i>
+										<i class="ace-icon fa fa-hdd"></i>
 										Erros
 									</a>
 								</li>
 								<li>
 									<a href="{{=URL('portalpet','appadmin','update',args=('db','control_migration',1) )}}" target="_blank">
-										<i class="icon-hdd"></i>
+										<i class="ace-icon fa fa-hdd"></i>
 										Control Migration
 									</a>
 								</li>
 								<li>
+									<a href="{{=URL('portalpet','appadmin','update',args=('db','control_permission',1) )}}" target="_blank">
+										<i class="ace-icon fa fa-hdd"></i>
+										Control Permission
+									</a>
+								</li>
+								<li>
 									<a href="{{=URL('admin','debug','interact') }}" target="_blank">
-										<i class="icon-bug"></i>
+										<i class="ace-icon fa fa-bug"></i>
 										Debug
 									</a>
 								</li>
@@ -98,22 +104,22 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 								<li>
 									<a href="{{=URL('admin','default','design',args=('portalpet')) }}" target="_blank">
 										Editar Portal PET
-										<i class="icon-arrow-right"></i>
+										<i class="ace-icon fa fa-arrow-right"></i>
 									</a>
 								</li>
 							</ul>
 						</li>
-					
-					
+
+
 						<li class="grey">
 							<a data-toggle="dropdown" class="dropdown-toggle" href="#">
-								<i class="icon-tasks"></i>
+								<i class="ace-icon fa fa-tasks"></i>
 								<span class="badge badge-grey">{{#Ações pendentes}}</span>
 							</a>
 
 							<ul class="pull-right dropdown-navbar dropdown-menu dropdown-caret dropdown-close">
 								<li class="dropdown-header">
-									<i class="icon-ok"></i>
+									<i class="ace-icon fa fa-ok"></i>
 									4 Tarefas Pendentes
 								</li>
 
@@ -133,7 +139,7 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 								<li>
 									<a href="#">
 										Ver tarefas em detalhe
-										<i class="icon-arrow-right"></i>
+										<i class="ace-icon fa fa-arrow-right"></i>
 									</a>
 								</li>
 							</ul>
@@ -141,13 +147,13 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 
 						<li class="purple">
 							<a data-toggle="dropdown" class="dropdown-toggle" href="#">
-								<i class="icon-bell-alt icon-animated-bell"></i>
+								<i class="ace-icon fa fa-bell icon-animated-bell"></i>
 								<span class="badge badge-important">{{#Alertas}}</span>
 							</a>
 
 							<ul class="pull-right dropdown-navbar navbar-pink dropdown-menu dropdown-caret dropdown-close">
 								<li class="dropdown-header">
-									<i class="icon-warning-sign"></i>
+									<i class="ace-icon fa fa-warning-sign"></i>
 									Alertas
 								</li>
 
@@ -155,7 +161,7 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 <!--									<a href="#">-->
 <!--										<div class="clearfix">-->
 <!--											<span class="pull-left">-->
-<!--												<i class="btn btn-xs no-hover btn-pink icon-comment"></i>-->
+<!--												<i class="btn btn-xs no-hover btn-pink ace-icon fa fa-comment"></i>-->
 <!--												New Comments-->
 <!--											</span>-->
 <!--											<span class="pull-right badge badge-info">+12</span>-->
@@ -166,7 +172,7 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 								<li>
 									<a href="#">
 										Ver todos os Alertas
-										<i class="icon-arrow-right"></i>
+										<i class="ace-icon fa fa-arrow-right"></i>
 									</a>
 								</li>
 							</ul>
@@ -174,13 +180,13 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 
 						<li class="green">
 							<a data-toggle="dropdown" class="dropdown-toggle" href="{{=URL('default','inbox')}}">
-								<i class="icon-envelope icon-animated-vertical"></i>
+								<i class="ace-icon fa fa-envelope ace-icon fa fa-animated-vertical"></i>
 								<span class="badge badge-success">{{="(%s)" %unreaded if unreaded else ''}}</span>
 							</a>
 
 							<ul class="pull-right dropdown-navbar dropdown-menu dropdown-caret dropdown-close">
 								<li class="dropdown-header">
-									<i class="icon-envelope-alt"></i>
+									<i class="ace-icon fa fa-envelope-alt"></i>
 									Mensagens
 								</li>
 
@@ -194,7 +200,7 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 <!--											</span>-->
 
 <!--											<span class="msg-time">-->
-<!--												<i class="icon-time"></i>-->
+<!--												<i class="ace-icon fa fa-time"></i>-->
 <!--												<span>a moment ago</span>-->
 <!--											</span>-->
 <!--										</span>-->
@@ -204,7 +210,7 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 								<li>
 									<a href="inbox.html">
 										Ver todas as Mensagens
-										<i class="icon-arrow-right"></i>
+										<i class="ace-icon fa fa-arrow-right"></i>
 									</a>
 								</li>
 							</ul>
@@ -221,19 +227,19 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 									        pass
 								        }}
 								    </span>
-								    <i class="icon-caret-down"></i>
+								    <i class="ace-icon fa fa-caret-down"></i>
 							    </a>
 							    <ul class="user-menu pull-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
 								    <li>
 									    <a href="#">
-										    <i class="icon-cog"></i>
+										    <i class="ace-icon fa fa-cog"></i>
 										    Configurações
 									    </a>
 								    </li>
 
 								    <li>
 									    <a href="{{=URL('default','pessoa')}}">
-										    <i class="icon-user"></i>
+										    <i class="ace-icon fa fa-user"></i>
 										    Perfil
 									    </a>
 								    </li>
@@ -242,13 +248,13 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 
 								    <li>
 									    <a href="{{=URL('default','user',args=('logout',))}}">
-										    <i class="icon-off"></i>
+										    <i class="ace-icon fa fa-off"></i>
 										    Logout
 									    </a>
 								    </li>
 							    </ul>
 						    {{else:
-    						    =A(I(_class="icon-signin"),' Login / Registre-se',_href=URL('default','user',args=('login',)) )
+    						    =A(I(_class="ace-icon fa fa-signin"),' Login / Registre-se',_href=URL('default','user',args=('login',)) )
 						    pass}}
 
 						</li>
@@ -257,30 +263,30 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 			</div><!-- /.container -->
 		</div>
 
-		<div class="main-container container" id="main-container">
+		<div class="main-container" id="main-container">
 			<div class="main-container-inner">
 				<a class="menu-toggler" id="menu-toggler" href="#">
 					<span class="menu-text"></span>
 				</a>
 
-				<div class="sidebar" id="sidebar">
+				<div class="sidebar responsive sidebar-fixed sidebar-scroll" id="sidebar">
 
 					<div class="sidebar-shortcuts" id="sidebar-shortcuts">
 						<div class="sidebar-shortcuts-large" id="sidebar-shortcuts-large">
 							<button class="btn btn-success">
-								<i class="icon-signal"></i>
+								<i class="ace-icon fa fa-signal"></i>
 							</button>
 
 							<button class="btn btn-info">
-								<i class="icon-pencil"></i>
+								<i class="ace-icon fa fa-pencil"></i>
 							</button>
 
 							<button class="btn btn-warning">
-								<i class="icon-group"></i>
+								<i class="ace-icon fa fa-group"></i>
 							</button>
 
 							<button class="btn btn-danger">
-								<i class="icon-cogs"></i>
+								<i class="ace-icon fa fa-cogs"></i>
 							</button>
 						</div>
 
@@ -296,71 +302,95 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 					</div><!-- #sidebar-shortcuts -->
                     {{is_mobile=request.user_agent().get('is_mobile')}}
                       {{if response.menu:
-                        =MENU_(response.menu, _class='mobile-menu nav' if is_mobile else 'nav nav-list',mobile=is_mobile,li_class='',ul_class='submenu',li_active='active',active_url=request.env.path_info)
+                        =MENU_(response.menu, _class='mobile-menu nav' if is_mobile else 'nav nav-list',mobile=is_mobile,li_class='',li_first='',li_last='',ul_class='submenu',li_active='active',active_url=request.env.path_info)
                         pass
                     }}
-
-					<div class="sidebar-collapse" id="sidebar-collapse">
-						<i class="icon-double-angle-left" data-icon1="icon-double-angle-left" data-icon2="icon-double-angle-right"></i>
-					</div>
+                    <div id="sidebar-collapse" class="sidebar-toggle sidebar-collapse">
+                        <i class="ace-icon fa fa-angle-double-left" data-icon2="ace-icon fa fa-angle-double-right" data-icon1="ace-icon fa fa-angle-double-left"></i>
+                    </div>
 				</div>
 
 				<div class="main-content">
-					<div class="breadcrumbs" id="breadcrumbs">
-						<ul class="breadcrumb">
-							<li>
-								<i class="icon-home home-icon"></i>
-								<a href="#">Home</a>
-							</li>
-							<li class="active">Dashboard</li>
-						</ul><!-- .breadcrumb -->
+					<div class="breadcrumbs breadcrumbs-fixed" id="breadcrumbs">
+						<script type="text/javascript">
+						    try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
+					    </script>
+
+					    <ul class="breadcrumb">
+						    <li>
+							    <i class="ace-icon fa fa-home home-icon"></i>
+							    <a href="#">Home</a>
+						    </li>
+						    <li class="active">Dashboard</li>
+					    </ul><!-- /.breadcrumb -->
 
 						<div class="nav-search" id="nav-search">
 							<form class="form-search">
 								<span class="input-icon">
-									{{=INPUT(_type="text",_placeholder="Pesquisar ...",_class="search_tool nav-search-input",_autocomplete="off",**{'_data-url':URL('default','generic_search')} ) }}
-									<i class="icon-search nav-search-icon"></i>
+								    <input type="text" 
+								           placeholder="Pequisar 'Grupos', 'Pessoas', 'Atividades'..."
+                                           class="nav-search-input"
+                                           id="tags-search"
+                                           style="width:320px;"
+                                           autocomplete="off"
+                                           data-typeahead-url="{{=URL('default','generic_search',extension='json', vars=dict(url=True))}}"
+                                           data-typeahead-return="window.location.replace(datum.value);">
+									<i class="ace-icon fa fa-search nav-search-icon"></i>
 								</span>
 							</form>
 						</div><!-- #nav-search -->
 					</div>
 
-					<div class="page-content">
-					    {{block header}}
-						<div class="page-header">
-                            <h1>
-                                {{=response.title or request.application}}
-                                <small>
-                                    <i class="icon-double-angle-right"></i>
-                                    {{=response.subtitle or ''}}
-                                </small>
-                            </h1>
-						</div><!-- /.page-header -->
-                        {{end}}
-						<div class="row">
-							<div class="col-xs-12">
-								<!-- PAGE CONTENT BEGINS -->
-								{{for message in session.flash or []:
-								    =message
-								    pass
-							    }}
-							    {{if response.paginate:}}
-                                    {{=response.paginate}}
-                                    <div class="space"></div>
-                                 {{pass}}
+					<div class="page-content" style="opacity: 1;">
 
-                                {{ include }}
+					    <div class="page-content-area">
+                            <title>{{=response.title or request.application}}</title>
 
-								<!-- PAGE CONTENT ENDS -->
-							</div><!-- /.col -->
-						</div><!-- /.row -->
+                            {{block header}}
+                            <div cass="page-header">
+                                <h1>
+                                    {{=response.title or request.application}}
+                                    <small>
+                                        <i class="ace-icon fa fa-double-angle-right"></i>
+                                        {{=response.subtitle or ''}}
+                                    </small>
+                                </h1>
+                            </div>
+                            {{end}}
+
+                            <div class="row">
+                                <div class="col-xs-12">
+                                  <!-- PAGE CONTENT BEGINS -->
+		                            {{if response.paginate:}}
+		                                <div class="row">
+                                            <div class="col-xs-12">
+	                                            <div class="pull-right">
+                                                {{=response.paginate}}
+                                                </div>
+                                            </div>    
+                                        </div>
+                                        <div class="space"></div>
+                                    {{pass}}
+
+		                            {{for message in session.flash or []:
+		                                =message
+		                                pass
+	                                }}
+
+                                    {{ include }}
+
+		                            <!-- PAGE CONTENT ENDS -->
+	                            </div><!-- /.col -->
+                            </div><!-- /.row -->
+					    </div>
+
 					</div><!-- /.page-content -->
 				</div><!-- /.main-content -->
-                
+
                 {{block settings}}
 				<div class="ace-settings-container" id="ace-settings-container">
 					<div class="btn btn-app btn-xs btn-warning ace-settings-btn" id="ace-settings-btn">
-						<i class="icon-cog bigger-150"></i>
+						<i class="ace-icon fa fa-cog bigger-150"></i>
 					</div>
 
 					<div class="ace-settings-box" id="ace-settings-box">
@@ -409,162 +439,12 @@ if not ('pessoa' in globals() or 'pessoa' in locals() ):
 			</div><!-- /.main-container-inner -->
 
 			<a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
-				<i class="icon-double-angle-up icon-only bigger-110"></i>
+				<i class="ace-icon fa fa-double-angle-up ace-icon fa fa-only bigger-110"></i>
 			</a>
 		</div><!-- /.main-container -->
 
-        <!--[if !IE]> -->
-
-		<script type="text/javascript">
-			window.jQuery || document.write("<script src='{{=URL('static','assets/js/jquery-2.0.3.min.js')}}'>"+"<"+"/script>");
-		</script>
-
-		<!-- <![endif]-->
-
-		<!-- basic scripts -->
-        {{
-        for static in js_s:
-            =XML("%s\n" %static.xml())
-            pass
-        }}
-
-		<!--[if IE]>
-<script type="text/javascript">
- window.jQuery || document.write("<script src='{{=URL('static','assets/js/jquery-1.10.2.min.js')}}'>"+"<"+"/script>");
-</script>
-<![endif]-->
-
-		<script type="text/javascript">
-			if("ontouchend" in document) document.write("<script src='{{=URL('static','assets/js/jquery.mobile.custom.min.js')}}'>"+"<"+"/script>");
-		</script>
-
-
-		<!-- page specific plugin scripts -->
-
-		<!--[if lte IE 8]>
-		  {{=SCRIPT( _src=URL('static','assets/js/excanvas.min.js'), _type="text/javascript")}}
-		<![endif]-->
-
-
-		<script type="text/javascript">
-			jQuery(function($) {
-			    $.fn.uniformHeight = function() {
-                    var maxHeight   = 0,
-                        max         = Math.max;
-
-                    return this.each(function() {
-                        maxHeight = max(maxHeight, $(this).height());
-                    }).height(maxHeight);
-                }
-                $(".thumbnail").uniformHeight();
-
-                
-                $('.date-picker').datepicker({autoclose:true}).next().on(ace.click_event, function(){
-					$(this).prev().focus();
-				});
-				                
-                
-				$('body').on('mouseover',function(){
-				    $('.sparkline').each(function(){
-					    var $box = $(this).closest('.infobox');
-					    var barColor = !$box.hasClass('infobox-dark') ? $box.css('color') : '#FFF';
-					    $(this).sparkline('html', {tagValuesAttribute:'data-values', type: 'bar', barColor: barColor , chartRangeMin:$(this).data('min') || 0} );
-				    });
-				    
-				    $('.easy-pie-chart.percentage').each(function(){
-					    var $box = $(this).closest('.infobox');
-					    var barColor = $(this).data('color') || (!$box.hasClass('infobox-dark') ? $box.css('color') : 'rgba(255,255,255,0.95)');
-					    var trackColor = barColor == 'rgba(255,255,255,0.95)' ? 'rgba(255,255,255,0.25)' : '#E2E2E2';
-					    var size = parseInt($(this).data('size')) || 50;
-					    $(this).easyPieChart({
-						    barColor: barColor,
-						    trackColor: trackColor,
-						    scaleColor: false,
-						    lineCap: 'butt',
-						    lineWidth: parseInt(size/10),
-						    animate: /msie\s*(8|7|6)/.test(navigator.userAgent.toLowerCase()) ? false : 1000,
-						    size: size
-					    });
-				    })
-                    
-                    $('.datetime').datetimepicker({
-                        useSeconds: false,
-                        sideBySide: true,
-                        language:'pt-BR',
-                        icons:{
-                            time: 'icon-time',
-                            date: 'icon-calendar',
-                            up:   'icon-chevron-up',
-                            down: 'icon-chevron-down'
-                        }
-                    
-                    });
-                    
-				})
-
-				$('#recent-box [data-rel="tooltip"]').tooltip({placement: tooltip_placement});
-				function tooltip_placement(context, source) {
-					var $source = $(source);
-					var $parent = $source.closest('.tab-content')
-					var off1 = $parent.offset();
-					var w1 = $parent.width();
-
-					var off2 = $source.offset();
-					var w2 = $source.width();
-
-					if( parseInt(off2.left) < parseInt(off1.left) + parseInt(w1 / 2) ) return 'right';
-					return 'left';
-				}
-
-
-				$('.dialogs,.comments').slimScroll({
-					height: '300px'
-			    });
-			    
-    
-                $.each($('.search_tool'),function(index,value){
-                    var component = $(value);
-                    var url = component.attr('data-url');
-                    component.typeahead({
-                          matcher: function (item) {
-                            return true
-                          }
-                        , highlighter: function (item) {
-                            if (item.value){
-                              var query = this.query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
-                              return item.value.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
-                                return '<strong>' + match + '</strong>'
-                              }) || item.value
-                            }
-                          }
-                        , source: function(query, process) {
-                            $.ajax({
-                                url: url ,
-                                dataType: "json",
-                                type: "POST",
-                                data: {
-                                    max_rows: 15,
-                                    search_key: query,
-                                    ajax: 1
-                                },
-                                success: function(data) {
-                                  var return_list = [], i = data.length;
-                                  while (i--) {
-                                    return_list[i] = {id: data[i].id, value: data[i].value, href: data[i].href};
-                                  }
-                                  process(return_list);
-                                }
-                            });
-                        },
-                        updater: function(obj) {
-                            window.location = obj.href;
-                        }
-                    });
-                });
-            })
-		</script>
-		
+        {{include 'default_script.html'}}
 		{{block script}}{{end}}
-		
+
 	</body>
 </html>

@@ -10,36 +10,55 @@ def get_pessoa(request,db,auth,select_args=[],select_kwargs={},force_auth=False,
         pessoas = db(((db.pessoa.slug==arg) | (db.pessoa.id==arg if arg.isdigit() else 0)) & \
                   (db.pessoa_fisica.pessoa_id==db.pessoa.id)).select(
                     *select_args,**select_kwargs)
-        
+
     else:
         pessoas = db((db.pessoa_fisica.pessoa_id==db.pessoa.id) & \
                    (db.pessoa_fisica.user_id==auth.user_id)).select(
                     *select_args,**select_kwargs )
-     
+
     if render:
         return pessoas.render(0,fields=[db.pessoa.cidade_id,
                                         db.pessoa_fisica.sexo,
                                         db.pessoa_fisica.cidade_estudo_id,
-                                        db.pessoa_fisica.data_nascimento]) if len(pessoas) else None 
+                                        db.pessoa_fisica.data_nascimento]) if len(pessoas) else None
     else:
         return pessoas.first()
-        
-        
+
+
 def get_mensagem(request,db,select_args=[],select_kwargs={}):
     return db(db.mensagem.hash==request.vars.get('mensagem')
                 ).select(*select_args,**select_kwargs).first()
 
 
-def pessoa_menu(response,auth):
+def pessoa_menu(db,response,auth):
+    pessoa = db((db.pessoa_fisica.pessoa_id==db.pessoa.id) & \
+                   (db.pessoa_fisica.user_id==auth.user_id)).select(db.pessoa.ALL).first()
     response.menu = [
-        ((I(_class="icon-user"),' ',T('Perfil')), False, URL('default', 'pessoa'), []),
-        ((I(_class="icon-list"),' ',T('Atividades')), False, URL('default','pessoa_atividades'),[]),
-        ((I(_class="icon-file"),' ',T('Artigos')), False, URL('default','pessoa_artigos'),[]),
-        #((I(_class="icon-blog"),' ',T('Arquivos/Apostilas')), False, URL('default','arquivos_pessoa'),[]),
-        ((I(_class="icon-envelope"),' ',T('Mensagens')), False, URL('default','inbox'),[]),
-        #((I(_class="icon-book-open"),' ',T('Albuns')), False, URL('default','albuns'),[]),
-
+        ((I(_class="fa fa-user"),' ',T('Perfil')), False, URL('default', 'pessoa'), []),
+        ((I(_class="fa fa-list"),' ',T('Atividades')), False, URL('default','pessoa_atividades'),[]),
+        ((I(_class="fa fa-file"),' ',T('Artigos')), False, URL('default','pessoa_artigos'),[]),
+        #((I(_class="fa fa-blog"),' ',T('Arquivos/Apostilas')), False, URL('default','arquivos_pessoa'),[]),
+        ((I(_class="fa fa-envelope"),' ',T('Mensagens')), False, URL('default','inbox'),[]),
+        #((I(_class="fa fa-book-open"),' ',T('Albuns')), False, URL('default','albuns'),[]),
     ]
+
+    integrantes = db(db.integrante.pessoa_id==pessoa.id).select(groupby=db.integrante.grupo_id)
+    if pessoa and len(integrantes):
+        for i in integrantes:
+            grupo = i.grupo_id
+            response.menu.append(
+                ((I(_class="fa fa-group"),' ',grupo.nome), False,"",
+                    [
+                     (T('Página do Grupo'), False, URL('grupos','grupo',args=(grupo.slug,)),[]),
+                     (T('Solicitações de Inclusão'), False, URL('grupos','grupo',args=(grupo.slug,)),[]),
+                     (T('Caixa de entrada'), False, URL('grupos','grupo',args=(grupo.slug,)),[]),
+                     (T('Atividades'), False, URL('grupos','grupo',args=(grupo.slug,)),[]),
+                     (T('Arquivos'), False, URL('grupos','grupo',args=(grupo.slug,)),[]),
+                     (T('Reunião'), False, URL('grupos','grupo',args=(grupo.slug,)),[]),
+                     (T('Arquivos'), False, URL('grupos','grupo',args=(grupo.slug,)),[])
+                     ]
+                 )
+            )
 
 #MENSAGEM POST_SAVE
 #for pessoa in destinatarios:

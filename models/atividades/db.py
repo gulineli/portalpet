@@ -11,14 +11,13 @@ db.define_table('atividade_congresso',
     Field('ficha_avaliacao','upload',uploadfolder=os.path.join(request.folder,'uploads','atividades','ficha_avaliacao') ),
     Field('num_artigos_grupo','integer'),
     Field('vincular_grupo','boolean'),
-    migrate=MIGRATE
 )
 
 
 db.define_table('atividade_autores',
     Field('atividade_id','reference atividade'),
     Field('grupousergroup_id','integer'),
-    migrate=MIGRATE)
+)
 
 
 ##Atividade_avaliador - Substituida pela tabela avaiador apenas
@@ -26,32 +25,38 @@ db.define_table('avaliador',
     Field('atividade_id','reference atividade',required=True),
     Field('pessoa_id','reference pessoa',required=True),
     Field('areas_conhecimento','list:string'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('atividade_groups',
     Field('atividade_id','reference atividade',required=True),
     Field('group_id','reference auth_group'),
     format="%(atividade_id)s",
-    migrate=MIGRATE)
+)
 
 
 db.define_table('atividade_responsaveis',
     Field('atividade_id','integer'),
     Field('responsavel_id','integer'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('atividade_subatividades',
     Field('mestra_id','reference atividade',required=True),
     Field('subatividade_id','reference atividade',required=True),
-    migrate=MIGRATE)
+)
 
+
+db.define_table('atividade_organizador',
+    Field('atividade_id','reference atividade',required=True),
+    Field('pessoa_id','reference pessoa'),
+)
+    
 
 ##db.define_table('avaliador',
 ##    Field('pessoa_id','integer'),
 ##    Field('areas_conhecimento','string'),
-##    migrate=MIGRATE)
+##)
 
 
 db.define_table('certificado',
@@ -67,7 +72,7 @@ db.define_table('certificado',
     Field('trash','boolean'),
     Field.Virtual('dono',
         lambda row: getattr(db,row.table)[row.object_id] ),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('certificado_problema',
@@ -76,18 +81,18 @@ db.define_table('certificado_problema',
     Field('data','datetime'),
     Field('corrigido','integer'),
     Field('resolvido','integer'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('certificados_modelo',
     Field('modelo_certificado_id','integer'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('certificados_modelo_certificados',
     Field('certificados_modelo_id','integer'),
     Field('certificado_id','integer'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('atividade_pagamento',
@@ -100,13 +105,13 @@ db.define_table('atividade_pagamento',
     Field('data_vencimento','date'),
     Field('instrucoes','text'),
     Field('gerar_boleto_por_grupo','boolean'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('atividade_boletos',
     Field('atividade_id','reference atividade',required=True),
     Field('boleto_id','reference boleto',required=True),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('etiqueta',
@@ -115,7 +120,7 @@ db.define_table('etiqueta',
     Field('atividade_id','integer'),
     Field('lista','string'),
     Field('texto','text'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('grupo_inscricao',
@@ -123,13 +128,13 @@ db.define_table('grupo_inscricao',
     Field('atividade_id','integer'),
     Field('finalizada','integer'),
     Field('valor_pago','double'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('grupo_inscricao_inscritos',
     Field('grupo_inscricao_id','integer'),
     Field('inscrito_id','integer'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('inscrito',
@@ -145,7 +150,7 @@ db.define_table('inscrito',
     Field('fake','boolean',default=False),
     Field('finalizada','boolean',default=False),
     Field('espera','boolean',default=False),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('delta_inscricao',
@@ -153,7 +158,7 @@ db.define_table('delta_inscricao',
     Field('data','date',default=request.now,required=True),
     Field('n_inscricao','integer',required=True),
     format="%(data)s - %(atividade_id)s - %(n_inscricao)s",
-    migrate=MIGRATE
+
 )
 
 
@@ -163,13 +168,13 @@ db.define_table('lista_presenca',
     Field('finalizada','boolean'),
     
     format = lambda r: "%s - %s" %(db.atividade._format %r.atividade_id,r.n_lista) ,
-    migrate=MIGRATE)
+)
 
 
 db.define_table('lista_presenca_pessoas',
     Field('lista_presenca_id','reference lista_presenca',required=True),
     Field('pessoa_id','reference pessoa',required=True), ##antes inscrito_id
-    migrate=MIGRATE)
+)
 
 
 db.define_table('modelo_certificado',
@@ -179,19 +184,19 @@ db.define_table('modelo_certificado',
     Field('certificados','string'),
     Field('processamento','datetime'),
     Field('last_update','datetime'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('modelo_certificado_emails',
     Field('modelo_certificado_id','integer'),
     Field('mailmessage_id','integer'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('modelo_certificado_include_inscritos',
     Field('inscrito_id','integer'),
     Field('modelo_certificado_id','integer'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('pagina',
@@ -206,7 +211,7 @@ db.define_table('pagina',
     Field('modelo_certificado_id','integer'),
     Field('tx_reducao','double'),
     Field('tamanho','string'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('tipo_etiqueta',
@@ -221,7 +226,7 @@ db.define_table('tipo_etiqueta',
     Field('margem_esquerda','double'),
     Field('h','double'),
     Field('d','double'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('artigo',
@@ -230,16 +235,16 @@ db.define_table('artigo',
     Field('avaliador_id','reference avaliador'),
     Field('atividade_id','reference atividade',required=True),
     Field('area_conhecimento','string'),
-    migrate=MIGRATE)
+)
     
 
-av_parecer = {'ap':'Aprovado', 'am':'Aceito com Modificações', 're':'Rejeitado'}
+av_parecer = {'ap':'Aprovado', 'am':'Necessita de Modificações', 're':'Rejeitado'}
 db.define_table('avaliacao',
     Field('comentarios','text'),
     Field('parecer','string',requires=IS_IN_SET(av_parecer.items()),represent=lambda r,v:av_parecer[v] ),
     Field('data_avaliacao','date'),
     Field('liberar','boolean'),
-    migrate=MIGRATE)
+)
     
     
 db.define_table('versao',
@@ -250,7 +255,7 @@ db.define_table('versao',
     Field('data_envio','date',default=request.now),
     Field('artigo_id','reference artigo',required=True),
     Field('enviado','boolean'),
-    migrate=MIGRATE)
+)
 
 
 db.define_table('autor',
@@ -259,13 +264,13 @@ db.define_table('autor',
     Field('pessoa_id','reference pessoa'),
     Field('nome','string'),
     Field('email','string',requires=IS_EMPTY_OR(IS_EMAIL()) ),
-    migrate=MIGRATE)
+)
     
     
 #db.define_table('versao_autores',
 #    Field('versao_id','integer'),
 #    Field('autor_id','integer'),
-#    migrate=MIGRATE)
+#)
 
 
 def after_insert_inscrito(f,id):

@@ -31,7 +31,7 @@ class MENU_(MENU):
                     li = LI(name)
                 else:
                     li = LI(A(XML(" ".join(map(lambda s: "%s" %s,name)) ),
-                              B(_class="arrow icon-angle-down"),
+                              B(_class="arrow fa fa-angle-down"),
                               _href='#',
                               _class=self['a_submenu_class'],))
                 if level == 0 and item == data[0]:
