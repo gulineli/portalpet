@@ -11,39 +11,55 @@
     {{for i in range(n_rows):
         =XML('<div class="row">')
         for grupo in grupos[i*n_grupos_in_row:(i+1)*n_grupos_in_row]: }}
-        <div class="col-sm-6 col-md-{{=n}}" style="height:100%;">
-          <div class="thumbnail" style="height:100%;">
-            <img src="{{=URL('download',args=(grupo.miniatura,))}}" title="{{=grupo.nome}}" alt="{{=grupo.nome}}">
-            <address>
-				<strong>Twitter, Inc.</strong>
-
-				<br>
-				795 Folsom Ave, Suite 600
-				<br>
-				San Francisco, CA 94107
-				<br>
-				<abbr title="Phone">P:</abbr>
-				(123) 456-7890
-			</address>
+        <div class="col-sm-6 col-md-{{=n}}" style="height:300px;">
+          <div class="thumbnail ace-scroll" style="height:300px;">
+            {{
+            path=''
+            if grupo.miniatura:
+                file_properties = db.grupo.miniatura.\
+                                    retrieve_file_properties(grupo.miniatura or '')
+                filename = file_properties['filename'].lower()
+                path = os.path.join(server.PORTAL_PATH, file_properties['path'], 
+                                    grupo.miniatura)
+                pass
+            }}
             
-            <div class="caption">
-              <h3><a href="{{=URL('grupos','grupo',args=(grupo.slug,))}}">{{=grupo.nome}}</a></h3>
-              <p>
-                Cidade: {{=db.cidade._format(grupo.cidade_id) or "-" }}
-              </p>
-              {{ if grupo.curso: }}<p>Curso: {{=grupo.curso }}</p>{{pass}}
-              {{ if grupo.instituicao_id: }}<p>Instituição: {{=grupo.instituicao_id }}</p>{{pass}}
-              <p>
-                <a class="btn btn-primary btn-sm" href = "{% url grupo_message_box o.slug %}" rel="tooltip" title="Deixe uma Mensagem">
-                  <i class="fa fa-icon fa-envelope" ></i>
+            
+            {{if os.path.isfile(path):}}
+                <img src="{{=URL('download',args=(grupo.miniatura,))}}" title="{{=grupo.nome}}" alt="">
+            {{else:}}
+                <div style="font-size: 100px; line-height:110px;margin-bottom:10px;color:#dddddd;" class="center">
+                    <i class="ace-icon fa fa-file-image-o fa-border"></i>
+                </div>
+            {{pass}}
+            <address>
+              <strong>
+                <a href="{{=URL('grupos','grupo',args=(grupo.slug,))}}">
+                  {{=truncate_words(grupo.nome, 5)}}
                 </a>
-                <a href="#" class="btn btn-default btn-sm">Atividades</a>
-              </p>
-            </div>
+              </strong>
+              <br>
+              Cidade: {{=db.cidade._format(grupo.cidade_id) or "-" }}
+              <br>
+              {{ if grupo.curso: }}
+                  Curso: {{=grupo.curso }}
+                  <br>
+                {{pass}}
+                      {{ if grupo.instituicao_id: }}
+                          Instituição: {{=grupo.instituicao_id }}
+                          <br>
+                      {{pass}}
+            </address>
           </div>
+          <div class="bottom-align" style="position:absolute; bottom:10px; left:20px;">
+		          <a class="btn btn-primary btn-sm" href = "{% url grupo_message_box o.slug %}" rel="tooltip" title="Deixe uma Mensagem">
+                    <i class="fa fa-icon fa-envelope" ></i>
+                  </a>
+                  <a href="#" class="btn btn-default btn-sm">Atividades</a>
+		      </div>
         </div>
         {{pass}}
       </div>
-      <div class="hr hr8"></div>
+      <div class="space-10"></div>
   {{pass}}
 {{pass}}

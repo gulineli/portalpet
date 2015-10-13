@@ -3,7 +3,7 @@ from random import randint
 from itertools import groupby
 import datetime
 
-from gluon import URL,XML,I,current,redirect
+from gluon import URL, XML, I, current, redirect
 T = current.T
 
 
@@ -21,14 +21,13 @@ def date2str(d,format=None):
 
 
 def datediff_T(diff,short=False):
-    d = T("%s %%{dia}",diff.days) if diff.days else ""
-    h = int(diff.seconds/3600)
-    m = int((diff.seconds - h*3600)/60)
-    s = diff.seconds -h*3600 - m*60
-    m = T("%s %%{minuto}",m) if m else ""
-    h = T("%s %%{hora}",h) if h else ""
-#    s = T("%s %%{segundo}",s) if s else ""
-    diffs = [unicode(u) for u in [d,h,m] if u]
+    d = T("%s %%{dia}", diff.days) if diff.days else ""
+    h = int(diff.seconds / 3600)
+    m = int((diff.seconds - h * 3600) / 60)
+    s = diff.seconds -h*3600 - m * 60
+    m = T("%s %%{minuto}", m) if m else ""
+    h = T("%s %%{hora}", h) if h else ""
+    diffs = [unicode(u) for u in [d, h, m] if u]
 
     if len(diffs) > 1:
         if short:
@@ -48,7 +47,6 @@ def cooldate(d, T=T,format=None):
         return '[invalid date]'
 
     if dt.days < 0:
-        suffix = ' from now'
         return date2str(d,format="%H:%M")
     else:
         return date2str(d,format=T('%Y-%m-%d'))
@@ -72,6 +70,14 @@ def render_fields(row,db,tables=[],exclude=[]):
     return render
 
 
+def truncate_words(text, n_words):
+    try:
+        splits = text.split(' ')
+        return ' '.join(splits[:n_words]) + ('' if len(splits)<=n_words else ' ...')
+    except:
+        return text
+
+
 def copydata(src, dest,db,tables=[]):
     ''' copy data for the listed from src to dest, only if they exist in the source
      it is chiefly used to populate fields in a created form
@@ -85,9 +91,9 @@ def copydata(src, dest,db,tables=[]):
 
 
 def create_hash(db,table,id,field='hash'):
-    hash = str(randint(100000000000,999999999999))
+    hash = str(randint(100000000000, 999999999999))
     while db(db[table][field]==hash).count():
-        hash = str(randint(100000000000,999999999999))
+        hash = str(randint(100000000000, 999999999999))
 
     db[table][id].update_record(**{field:hash})
 

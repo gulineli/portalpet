@@ -58,9 +58,9 @@ def pessoa():
                 response.flash='Dados Atualizados com sucesso'
 
 #        form = SQLFORM(db.pessoa_fisica,p.pessoa_fisica,upload=URL('download'),showid=False)
-##        form = SQLFORM.factory(db.pessoa,db.pessoa_fisica,table_name='pessoa',
-##                               upload=URL('download'),
-##                               uploadfolder=os.path.join(request.folder,'uploads','users','photos'))
+#         form = SQLFORM.factory(db.pessoa,db.pessoa_fisica,table_name='pessoa',
+#                                upload=URL('download'),
+#                                uploadfolder=os.path.join(request.folder,'uploads','users','photos'))
     else:
         pessoa_record = get_pessoa(request,db,auth,render=True)
 
@@ -73,8 +73,8 @@ def pessoa():
 #                id = db.pessoa_fisica.insert(**db.pessoa_fisica._filter_fields(form.vars))
 #                response.flash='Pessoa cadastrada com sucesso'
 #            else:
-##                pessoa_record.pessoa.update_record(**db.pessoa._filter_fields(form.vars))
-##                pessoa_record.pessoa_fisica.update_record(**db.pessoa_fisica._filter_fields(form.vars))
+#                 pessoa_record.pessoa.update_record(**db.pessoa._filter_fields(form.vars))
+#                 pessoa_record.pessoa_fisica.update_record(**db.pessoa_fisica._filter_fields(form.vars))
 #                response.flash='Dados Atualizados com sucesso'
 #            redirect(URL('default','pessoa'))
 
@@ -117,10 +117,10 @@ def inbox():
 
 
 def message():
-    ##Uma vez aberta a mensagem ele será considerada como lida
+    # Uma vez aberta a mensagem ele será considerada como lida
     reader = get_pessoa(request,db,auth,force_auth=True)
 
-    ##adicionar permissoes de leitura
+    # adicionar permissoes de leitura
     mensagem = db(db.mensagem.hash==request.vars.get('message')).select().first()
     mensagens_relacionadas = db(((db.mensagem.master==mensagem.id) |
                                 (db.mensagem.id==mensagem.id)) & \

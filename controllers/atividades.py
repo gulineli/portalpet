@@ -21,14 +21,15 @@ def index():
            ~(db.atividade.id.belongs(exclude_id)) )
            
     inicio = db.atividade_periodo.inicio.min()
-    paginate = Paginate(request,response,s,
+    paginate = Paginate(request, s,
                         select_args=[db.atividade.ALL,db.atividade_periodo.ALL,inicio],
                         select_kwargs={'orderby':~db.atividade_periodo.inicio,
                                        'groupby':db.atividade.id},
-                        itens_page=16,
-                        search_url=URL('default','get_atividade') )
+                        itens_page=15,
+                        search_url=URL('default','get_atividade'))
                         
     atividades = paginate.rows
+    response.paginate = paginate.render()
 
     return locals()
 

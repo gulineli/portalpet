@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # IN PRODUCTION MODE:
-# from gluon.custom_import import track_changes; track_changes(True)
+#from gluon.custom_import import track_changes; track_changes(True)
 
 
 # Public modules
@@ -15,12 +15,13 @@ from gluon.tools import Auth, Crud, Service, PluginManager, prettydate
 
 # Personal Modules
 import db_utils
-from images import THUMB
-from myutils import cooldate, date2str, datediff_T
-from widgets import Autocomplete, bootstrap3, bootstrap_editor, datepicker, Fileinput
-from custon_widgets import MultipleOptionsWidgetFK,SingleOptionsWidgetFK
-from custon_helper import BREADCRUMB, Paginate
 import server
+from images import THUMB
+from myutils import cooldate, date2str, datediff_T, truncate_words
+from widgets import Autocomplete, bootstrap3, bootstrap_editor, datepicker, Fileinput
+from custon_widgets import MultipleOptionsWidgetFK, SingleOptionsWidgetFK
+from custon_helper import BREADCRUMB
+from html_utils import Paginate
 
 
 items_per_page = 20
@@ -45,7 +46,8 @@ auth = Auth(db)
 crud, service, plugins = Crud(db), Service(), PluginManager()
 
 crud.settings.formstyle = auth.settings.formstyle = bootstrap3
-auth.settings.hmac_key = 'pbkdf2(10000,20,sha256):vbv+xrner#*#y-ug(hb4b9$_zt5+-nt+84*)*-5s*r+jjd231j'
+auth.settings.hmac_key = server.HMAC_KEY
+
 
 # Adiciona as colunas personalizadas para o auth_user padrão do web2py
 auth.settings.extra_fields['auth_user']= [
@@ -66,6 +68,7 @@ auth.define_tables(username=False, signature=False)
 # se logar utilizando o usuário ou email
 db.auth_user.email.requires = []
 
+# Permite que usuários do portalpet antigo possa se logar com suas senhas antigas
 auth.settings.login_methods.append(django_login(db))
 
 #  Configurações de email
@@ -85,12 +88,7 @@ auth.settings.expiration = 3600*2
 #auth.settings.login_onfail = URL('ggg')
 
 
-#  if you need to use OpenID, Facebook, MySpace, Twitter, Linkedin, etc.
-#  register with janrain.com, write your domain:api_key in private/janrain.key
-#from gluon.contrib.login_methods.rpx_account import use_janrain
-#use_janrain(auth, filename='private/janrain.key')
-
-db._common_fields.append( Field('original_id', 'integer', ))
+db._common_fields.append( Field('original_id', 'integer'))
 
 
 db.define_table('cidade',
@@ -644,11 +642,13 @@ db.pessoa.cidade_id.requires = db.pessoa_fisica.cidade_estudo_id.requires = \
 from pessoa_utils import get_pessoa
 global unreaded
 
-#from gluon.tools import prettydate
 
 
-db.pessoa._after_update.append(lambda s,f: \
-    s.update_naive(miniatura=db.pessoa.miniatura.compute(s.select().first())))
+db.pessoa._after_update.append(
+    lambda s,f: s.update_naive(
+        miniatura=db.pessoa.miniatura.compute(s.select().first())
+    )
+)
 
 
 
@@ -657,135 +657,140 @@ pessoa = get_pessoa(request, db,auth,force_auth=True)
 
 unreaded = None
 if pessoa:
-    unreaded = db((db.mensagem_destinatarios.pessoa_id==pessoa.pessoa.id) &
-                      (db.mensagem.id==db.mensagem_destinatarios.mensagem_id) ).count(distinct=True) - \
-                   db((db.mensagem_readers.mensagem_id==db.mensagem.id) & \
-                      (db.mensagem_readers.pessoa_id==pessoa.pessoa.id) &
-                     ~(db.mensagem.de==pessoa.pessoa.id)).count(distinct=True, cache=(cache.ram, 60))
+    total_messages = db(
+        (db.mensagem_destinatarios.pessoa_id==pessoa.pessoa.id) &
+        (db.mensagem.id==db.mensagem_destinatarios.mensagem_id)
+    ).count(distinct=True)
+    
+    readed_message = db(
+        (db.mensagem_readers.mensagem_id==db.mensagem.id) &
+        (db.mensagem_readers.pessoa_id==pessoa.pessoa.id) &
+        ~(db.mensagem.de==pessoa.pessoa.id)
+    ).count(distinct=True, cache=(cache.ram, 60))
+    unreaded = total_messages - readed_message
+                   
 
 
+#if db._dbname=='sqlite' and 0:
+#    index = [
+##         ('artigo',['id', '']),
+#         ('atividade',['id', 'nome']),
+##         ('Atividade_atividade_autores', ''),
+##         ('Atividade_atividade_avaliadores', ''),
+##         ('Atividade_atividade_groups', 'atividade_groups'),
+#         ('atividade_periodo',['id', 'atividade_id']),
+##         ('atividade_responsaveis',['id', 'atividade_id']),
+##         ('Atividade_atividade_sub_atividades', 'atividade_subatividades'),
+##         ('Atividade_autor', 'autor'),
+##          ('Atividade_avaliacao', 'avaliacao'),
+##         ('Atividade_avaliador', 'avaliador'),
+##         ('Atividade_certificado', 'certificado'),
+##         ('Atividade_certificado_problema', 'certificado_problema'),
+##         ('Atividade_certificados_modelo', 'certificados_modelo'),
+##         ('Atividade_certificados_modelo_certificados', 'certificados_modelo_certificados'),
+##         ('Atividade_detalhe_pagamento', 'atividade_pagamento'),
+##         ('Atividade_detalhe_pagamento_nossos_numeros', 'atividade_boletos'),
+##         ('Atividade_etiqueta', 'etiqueta'),
+##         ('Atividade_grupo_inscricao', 'grupo_inscricao'),
+##         ('Atividade_grupo_inscricao_inscritos', 'grupo_inscricao_inscritos'),
+##         ('Atividade_inscrito', 'inscrito'),
+##         ('Atividade_lista_presenca', 'lista_presenca'),
+##         ('Atividade_lista_presenca_pessoas', 'lista_presenca_pessoas'),
+##         ('Atividade_modelo_certificado', 'modelo_certificado'),
+##         ('Atividade_modelo_certificado_emails', ''),
+##         ('Atividade_modelo_certificado_include_inscritos', 'modelo_certificado_include_inscritos'),
+##         ('Atividade_pagina', 'pagina'),
+##         ('Atividade_periodo', 'atividade_periodo'),
+##         ('Atividade_tipo_etiqueta', 'tipo_etiqueta'),
+##         ('Atividade_versao', 'versao'),
+#         ('cidade',['id', 'nome', 'estado_id']),
+#         ('estado',['id', 'nome']),
+##         ('CustomForms_pendedform', 'pendedform'),
+##         ('CustomForms_pendedvalue', 'pendedvalue'),
+##         ('Financeiro_balanco', ''),
+##         ('Financeiro_balanco_despesas', ''),
+##         ('Financeiro_balanco_receitas', ''),
+##         ('Financeiro_convenio', 'convenio'),
+##         ('Financeiro_despesa', ''),
+##         ('Financeiro_numero_sequencial', 'boleto'),
+##         ('Financeiro_receita', ''),
+##         ('Grupo_arquivogrupo', ''),
+##         ('Grupo_assunto', 'assunto'),
+##         ('Grupo_automatizedpeoplegroup', 'automatizedpeoplegroup'),
+##         ('Grupo_automatizedpeoplegroup_filtros', 'automatizedpeoplegroup_filtros'),
+##         ('Grupo_egresso', ''),
+##         ('Grupo_entidade', 'pessoa_juridica'),
+##         ('Grupo_funcao', 'funcao'),
+#         ('grupo',['id', 'nome']),
+##         ('Grupo_grupo_peoplegroups', 'grupo_peoplegroups'),
+#         ('integrante',['id', 'grupo_id', 'pessoa_id']),
+##         ('Grupo_juntarse_grupo', 'juntarse_grupo'),
+##         ('Grupo_organizacao', 'organizacao'),
+##         ('Grupo_organizacao_funcoes', ''),
+##         ('Grupo_pauta', 'pauta'),
+##         ('Grupo_post', 'post'),
+##         ('Grupo_queryfiltro', 'queryfiltro'),
+##         ('Grupo_responsavel', 'responsavel'),
+##         ('Grupo_responsavel_responsaveis', 'responsavel_responsaveis'),
+##         ('Grupo_reuniao', 'reuniao'),
+##         ('Grupo_reuniao_ausentes', 'reuniao_ausentes'),
+##         ('Grupo_reuniao_topicos', 'reuniao_topicos'),
+##         ('Grupo_topico', 'topico'),
+##         ('Grupo_topico_pautas', 'topico_pautas'),
+##         ('Grupo_topico_responsaveis', 'topico_responsaveis'),
+##         ('Grupo_tutor', ''),
+##         ('Grupo_tutor_egresso', ''),
+##         ('Organizacao_divisao', 'divisao'),
+##         ('Organizacao_lotacao', 'lotacao'),
+##         ('Organizacao_organizacao', 'atividade_organizador'),
+##         ('Pessoa_contato_pessoa', 'pessoa_contato'),
+##         ('Pessoa_mensagem', 'mensagem'),
+##         ('Pessoa_mensagem_destinatarios', 'mensagem_destinatarios'),
+##         ('Pessoa_mensagem_readers', 'mensagem_readers'),
+##         ('Pessoa_mensagem_respostas', ''),
+##         ('Pessoa_peoplegroup', 'peoplegroup'),
+##         ('Pessoa_peoplegroup_pessoas', 'peoplegroup_pessoas'),
+#         ('pessoa',['id', 'nome']),
+#         ('pessoa_fisica',['id', 'pessoa_id']),
+##         ('Portal_acao', 'acao'),
+##         ('Portal_acao_grupo', 'acao_grupo'),
+##         ('Portal_acao_grupo_acoes', 'acao_grupo_acoes'),
+##         ('Portal_arquivo', 'arquivo'),
+##         ('Portal_arquivotemporario', ''),
+##         ('Portal_desenvolvedor', 'desenvolvedor'),
+##         ('Portal_mailmessage', 'mailmessage'),
+##         ('Portal_portal', 'portal'),
+##         ('Portal_portal_desenvolvedores', 'portal_desenvolvedores'),
+##         ('Portal_sugestao', 'sugestao'),
+##         ('Portal_sugestao_desenvolvedores', 'sugestao_desenvolvedores'),
+##         ('Portal_upload', ''),
+##         ('admin_tools_dashboard_preferences', ''),
+##         ('auth_group', 'auth_group'),
+##         ('auth_group_permissions', ''),
+##         ('auth_message', ''),
+##         ('auth_permission', ''),
+##         ('auth_user', 'auth_user'),
+##         ('auth_user_groups', ''),
+##         ('auth_user_user_permissions', ''),
+##         ('authority_permission', ''),
+##         ('django_admin_log', ''),
+##         ('django_content_type', ''),
+##         ('django_evolution', ''),
+##         ('django_flatpage', ''),
+##         ('django_flatpage_sites', ''),
+##         ('django_project_version', ''),
+##         ('django_session', ''),
+##         ('django_site', ''),
+##         ('facebook_facebookprofile', ''),
+##         ('registration_registrationprofile', '')
+#    ]
 
-if db._dbname=='sqlite' and 0:
-    print 11111111111111111
-    index = [
-#         ('artigo',['id', '']),
-         ('atividade',['id', 'nome']),
-#         ('Atividade_atividade_autores', ''),
-#         ('Atividade_atividade_avaliadores', ''),
-#         ('Atividade_atividade_groups', 'atividade_groups'),
-         ('atividade_periodo',['id', 'atividade_id']),
-#         ('atividade_responsaveis',['id', 'atividade_id']),
-#         ('Atividade_atividade_sub_atividades', 'atividade_subatividades'),
-#         ('Atividade_autor', 'autor'),
-#          ('Atividade_avaliacao', 'avaliacao'),
-#         ('Atividade_avaliador', 'avaliador'),
-#         ('Atividade_certificado', 'certificado'),
-#         ('Atividade_certificado_problema', 'certificado_problema'),
-#         ('Atividade_certificados_modelo', 'certificados_modelo'),
-#         ('Atividade_certificados_modelo_certificados', 'certificados_modelo_certificados'),
-#         ('Atividade_detalhe_pagamento', 'atividade_pagamento'),
-#         ('Atividade_detalhe_pagamento_nossos_numeros', 'atividade_boletos'),
-#         ('Atividade_etiqueta', 'etiqueta'),
-#         ('Atividade_grupo_inscricao', 'grupo_inscricao'),
-#         ('Atividade_grupo_inscricao_inscritos', 'grupo_inscricao_inscritos'),
-#         ('Atividade_inscrito', 'inscrito'),
-#         ('Atividade_lista_presenca', 'lista_presenca'),
-#         ('Atividade_lista_presenca_pessoas', 'lista_presenca_pessoas'),
-#         ('Atividade_modelo_certificado', 'modelo_certificado'),
-#         ('Atividade_modelo_certificado_emails', ''),
-#         ('Atividade_modelo_certificado_include_inscritos', 'modelo_certificado_include_inscritos'),
-#         ('Atividade_pagina', 'pagina'),
-#         ('Atividade_periodo', 'atividade_periodo'),
-#         ('Atividade_tipo_etiqueta', 'tipo_etiqueta'),
-#         ('Atividade_versao', 'versao'),
-         ('cidade',['id', 'nome', 'estado_id']),
-         ('estado',['id', 'nome']),
-#         ('CustomForms_pendedform', 'pendedform'),
-#         ('CustomForms_pendedvalue', 'pendedvalue'),
-#         ('Financeiro_balanco', ''),
-#         ('Financeiro_balanco_despesas', ''),
-#         ('Financeiro_balanco_receitas', ''),
-#         ('Financeiro_convenio', 'convenio'),
-#         ('Financeiro_despesa', ''),
-#         ('Financeiro_numero_sequencial', 'boleto'),
-#         ('Financeiro_receita', ''),
-#         ('Grupo_arquivogrupo', ''),
-#         ('Grupo_assunto', 'assunto'),
-#         ('Grupo_automatizedpeoplegroup', 'automatizedpeoplegroup'),
-#         ('Grupo_automatizedpeoplegroup_filtros', 'automatizedpeoplegroup_filtros'),
-#         ('Grupo_egresso', ''),
-#         ('Grupo_entidade', 'pessoa_juridica'),
-#         ('Grupo_funcao', 'funcao'),
-         ('grupo',['id', 'nome']),
-#         ('Grupo_grupo_peoplegroups', 'grupo_peoplegroups'),
-         ('integrante',['id', 'grupo_id', 'pessoa_id']),
-#         ('Grupo_juntarse_grupo', 'juntarse_grupo'),
-#         ('Grupo_organizacao', 'organizacao'),
-#         ('Grupo_organizacao_funcoes', ''),
-#         ('Grupo_pauta', 'pauta'),
-#         ('Grupo_post', 'post'),
-#         ('Grupo_queryfiltro', 'queryfiltro'),
-#         ('Grupo_responsavel', 'responsavel'),
-#         ('Grupo_responsavel_responsaveis', 'responsavel_responsaveis'),
-#         ('Grupo_reuniao', 'reuniao'),
-#         ('Grupo_reuniao_ausentes', 'reuniao_ausentes'),
-#         ('Grupo_reuniao_topicos', 'reuniao_topicos'),
-#         ('Grupo_topico', 'topico'),
-#         ('Grupo_topico_pautas', 'topico_pautas'),
-#         ('Grupo_topico_responsaveis', 'topico_responsaveis'),
-#         ('Grupo_tutor', ''),
-#         ('Grupo_tutor_egresso', ''),
-#         ('Organizacao_divisao', 'divisao'),
-#         ('Organizacao_lotacao', 'lotacao'),
-#         ('Organizacao_organizacao', 'atividade_organizador'),
-#         ('Pessoa_contato_pessoa', 'pessoa_contato'),
-#         ('Pessoa_mensagem', 'mensagem'),
-#         ('Pessoa_mensagem_destinatarios', 'mensagem_destinatarios'),
-#         ('Pessoa_mensagem_readers', 'mensagem_readers'),
-#         ('Pessoa_mensagem_respostas', ''),
-#         ('Pessoa_peoplegroup', 'peoplegroup'),
-#         ('Pessoa_peoplegroup_pessoas', 'peoplegroup_pessoas'),
-         ('pessoa',['id', 'nome']),
-         ('pessoa_fisica',['id', 'pessoa_id']),
-#         ('Portal_acao', 'acao'),
-#         ('Portal_acao_grupo', 'acao_grupo'),
-#         ('Portal_acao_grupo_acoes', 'acao_grupo_acoes'),
-#         ('Portal_arquivo', 'arquivo'),
-#         ('Portal_arquivotemporario', ''),
-#         ('Portal_desenvolvedor', 'desenvolvedor'),
-#         ('Portal_mailmessage', 'mailmessage'),
-#         ('Portal_portal', 'portal'),
-#         ('Portal_portal_desenvolvedores', 'portal_desenvolvedores'),
-#         ('Portal_sugestao', 'sugestao'),
-#         ('Portal_sugestao_desenvolvedores', 'sugestao_desenvolvedores'),
-#         ('Portal_upload', ''),
-#         ('admin_tools_dashboard_preferences', ''),
-#         ('auth_group', 'auth_group'),
-#         ('auth_group_permissions', ''),
-#         ('auth_message', ''),
-#         ('auth_permission', ''),
-#         ('auth_user', 'auth_user'),
-#         ('auth_user_groups', ''),
-#         ('auth_user_user_permissions', ''),
-#         ('authority_permission', ''),
-#         ('django_admin_log', ''),
-#         ('django_content_type', ''),
-#         ('django_evolution', ''),
-#         ('django_flatpage', ''),
-#         ('django_flatpage_sites', ''),
-#         ('django_project_version', ''),
-#         ('django_session', ''),
-#         ('django_site', ''),
-#         ('facebook_facebookprofile', ''),
-#         ('registration_registrationprofile', '')
-    ]
-
-    for table,indexes in index:
-        for i, col in enumerate(indexes):
-            name = 'idindex' if i==0 else "%s_%s" %(table, col)
-            c = 'CREATE INDEX IF NOT EXISTS %s ON %s (%s);' %(name,table, col)
-            print c
-            db.executesql(c)
+#    for table,indexes in index:
+#        for i, col in enumerate(indexes):
+#            name = 'idindex' if i==0 else "%s_%s" %(table, col)
+#            c = 'CREATE INDEX IF NOT EXISTS %s ON %s (%s);' %(name,table, col)
+#            print c
+#            db.executesql(c)
 
 
 
