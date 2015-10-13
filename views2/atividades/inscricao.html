@@ -1,0 +1,338 @@
+{{extend 'atividades/atividade_base.html' }}
+
+{{# block css }}
+{{#super}}
+{{#iForm.media.css}}
+<!--  <link href="css/colorbox.css" type="text/css" media="all" rel="stylesheet" />-->
+{{# end }}
+
+{{
+  from atividade_utils import periodos_shortcut
+  from inscricao_utils import atividades_disponiveis,em_periodo_inscricao,num_inscritos_,insc_online_subativs_
+  
+  subatividade = db.atividade_subatividades
+  subatividades_id = db((db.atividade.id==atividade.id) | 
+                        ((subatividade.mestra_id==atividade.id) & (subatividade.subatividade_id==db.atividade.id)) |\
+                        ((subatividade.subatividade_id==atividade.id) & (subatividade.mestra_id==db.atividade.id)) 
+                    )._select(db.atividade.id)
+    
+  atividades_inscritas = db((db.inscrito.atividade_id.belongs(subatividades_id) & \
+                            (db.inscrito.pessoa_id==pessoa.pessoa.id if pessoa else 0) & \
+                            (db.atividade.id==db.inscrito.atividade_id))).select(db.atividade.ALL,groupby=db.atividade.id)
+
+  ativis_disponiveis = atividades_disponiveis(db,atividade_inscricao,pessoa.pessoa if pessoa else None)[0]
+  subatividades = db(db.atividade_subatividades.mestra_id==atividade_inscricao.id)._select(db.atividade_subatividades.subatividade_id)
+  ativis_disponiveis = ativis_disponiveis.find(lambda row: row.id.belongs(subatividades) )
+  
+  do_insc = em_periodo_inscricao(db,atividade)
+  atividade_pagamento = db((db.atividade_pagamento.atividade_id==atividade.id)).select().first()
+  groups = db((db.atividade_groups.atividade_id==atividade.id) & (db.auth_group.id==db.atividade_groups.group_id)).select(db.auth_group.ALL)
+  }}
+
+{{ block script }}
+{{super}}
+<script type="text/javascript" src="js/jquery.colorbox-min.js"></script>
+
+{{if tipo=="administrador" or 1:}}
+<script type="text/javascript" language="javascript" charset="utf-8">
+$(document).ready(function(){
+  $('#inscrito_pessoa_text').focusin(function(){
+    $(this).val("").trigger('keyup');
+  })
+  var $pessoa = $('#inscrito_pessoa');
+  $pessoa.change(function(){
+    if ($pessoa.val()){
+      $("#inscrito_form").trigger('submit');
+    }
+    else{
+      $('.hide_this').hide();
+    }
+  });
+});
+</script>
+{{pass}}
+
+
+{{ if pessoa and atividade.tipo == "ev" and not insc_grupo: }}
+  <script type="text/javascript" language="javascript" charset="utf-8">
+    $(document).ready(function(){
+      $('#id_subatividades_text').focus();
+      $('#id_subatividades_text').typeahead({
+        matcher: function (item) {
+          return ~item.value.toLowerCase().indexOf(this.query.toLowerCase())
+        }
+        , highlighter: function (item) {
+          if (item.value){
+            var query = this.query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+            return item.value.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+              return '<strong>' + match + '</strong>'
+            })
+          }
+        }
+        , source: function(query, process) {
+          $.ajax({
+              url: "{{=URL('atividades','get_subatividades_pessoal',args=(atividade.slug,) ) }}",
+              dataType: "json",
+              type: "POST",
+              data: {
+                  max_rows: 15,
+                  search_key: query,
+                  ajax: 1,
+              },
+              success: function(data) {
+                var return_list = [], i = data.length;
+                while (i--) {
+                    if (data[i].title){
+                      if(data[i]._class){
+                        return_list[i] = {id: data[i].id, value: data[i].value,_class: data[i]._class,title: data[i].title};
+                      }
+                      else{
+                        return_list[i] = {id: data[i].id, value: data[i].value,title: data[i].title};
+                      }
+                    }
+                    else if(data[i]._class){
+                      return_list[i] = {id: data[i].id, value: data[i].value,_class: data[i]._class};
+                    }
+                    else{
+                      return_list[i] = {id: data[i].id, value: data[i].value};
+                    }
+                }
+                process(return_list);
+              }
+          });
+        },
+        updater: function(obj) {
+          $.ajax({
+                url: "{{=URL('atividades','inscricao_subatividades_pessoal',args=(atividade.slug,) ) }}",
+                type: "POST",
+                data: {
+                    atividade: obj.id,
+                    ajax: 1
+                },
+                success: function(data) {
+                  window.location.replace('{{=URL("atividades","inscricao",args=(atividade.slug,) ) }}');
+                }
+          });
+        }
+      });
+    });
+  </script>
+{{ else: }}
+  {{ if pessoa and atividade.tipo == "ev" and insc_grupo: }}
+    {{# boletos_pagos boletos as pagos }}
+    {{ if atividade_pagamento and atividade_pagamento.forma_pagamento == "bo" and editar and len(boletos) > len(pagos): }}
+    
+      <script type="text/javascript" language="javascript" charset="utf-8" src="bootstrap/js/bootbox.min.js"></script>
+
+      <script type="text/javascript">
+        $(document).ready(function(){
+          var num_ìnscritos_inicial = $("[name=pessoas]:checked").length;
+          $("#finalizar_id").click(function(e) {
+              var url_redirect = $(this).attr('href');
+              bootbox.confirm(
+                "<h3>Você já possui um boleto bancário para sua inscrição!</h3> Você pode: <ul><li>Gerar um novo boleto com o valor complementar e manter o boleto antigo clicando em <em>'Gerar outro boleto'</em>;ou</li><li>Atualizar o boleto antigo com o valor <b>total</b> das inscrições clicando em <em>'Atualizar Boleto'</em></li></ul> *Note que caso <b>já tenha pago</b> o boleto anterior, e ainda não tenha sido dado baixa no sistema, você <b>deverá</b> escolher a opção de <em>'Gerar outro boleto'</em> para o portal gerar um boleto com o valor correto.",
+                "Atualizar Boleto",
+                "Gerar outro boleto",
+                function(result) {
+                  if (result) {
+                     $('[name=pago]').attr('value','pago');
+                  }else{
+                     $('[name=pago]').attr('value','update');
+                  }
+                  $("#finalizar_id").unbind('click').click()
+                });
+              return false
+          });
+        });
+      </script>
+    {{ pass }}
+    <script type="text/javascript" language="javascript" charset="utf-8">
+      function addParameter(url, param, value) {
+        var val = new RegExp('(\\?|\\&)' + param + '=.*?(?=(&|$))'),
+            qstring = /\?.+$/;
+        if (val.test(url))
+        {
+            return url.replace(val, '$1' + param + '=' + value);
+        }
+        else if (qstring.test(url))
+        {
+            return url + '&' + param + '=' + value;
+        }
+        else
+        {
+            return url + '?' + param + '=' + value;
+        }
+      }
+      function atividade_select(obj){
+         window.location = addParameter(document.URL, 'atividade_inscricao', obj.value);
+      }
+    </script>
+  {{ pass }}
+{{ pass }}
+{{ end }}
+<h2>Inscrição na atividade {{atividade_inscricao.nome}}</h2>
+
+{{ if show_resumo: }}
+
+  {{include 'atividades/resumo_inscricao.html'}}
+
+{{ else: }}
+  <form method="POST" id="inscrito_form">
+    <input type="hidden" name="pago" value=""  />
+    
+    {{include 'atividades/informacoes_importantes.html'}}
+
+    <br/>
+    
+    <!--Inscrição de grupo-->
+    {{ if atividade_pagamento and atividade_pagamento.gerar_boleto_por_grupo and len(grupos): }}
+      {{ if not form.atividade.is_hidden: }}
+        <div class="control-group">
+          <label class="control-label" for="{{#form.atividade.id_for_label}}">
+            <i class="icon-sampler"></i>
+            <i class="icon-circle-info" title="Digite o nome das atividades que gostaria de inscrever esta pessoa" rel="tooltip"></i>
+            
+            Selecione a atividade que deseja proceder a inscrição:
+          </label>
+          <div class="controls">
+            <input type="text" name="subatividades_text" id="id_subatividades_text" autocomplete="off" value=""/>
+          </div>
+        </div>
+      {{ else: }}
+        {{#form.atividade}}
+      {{ pass }}
+      <div class="control-group">
+        <label class="control-label" for="{{#form.atividade.id_for_label}}">
+          <i class="icon-group"></i>
+          Selecione os integrantes de seu grupo que irão se inscrever na atividade selecionada:
+        </label>
+        <div class="controls">
+          {{#form.pessoas}}
+        </div>
+      </div>
+      <br>
+    {{ pass }}
+    <!--Fim inscricao de grupo-->
+    
+    
+    {{if tipo=="administrador" or 1:}}
+      {{from widgets import Autocomplete
+        inscrito_field = Field('pessoa')
+        pessoa_widget = Autocomplete(URL('atividades','get_pessoas_inscricao',args=(atividade.id)),show_result=False,tablename='inscrito').widget(inscrito_field,pessoa)
+      }}
+      <ul class="nav nav-tabs">
+        <li>
+          <a href="{% url insc_atividade atividade.slug %}">Inscrição de Pessoas</a>
+        </li>
+        <li>
+          <a href="{% url insc_grupo atividade.slug %}">Inscrição de Grupos</a>
+        </li>
+      </ul>
+      <div class="control-group">
+        <label class="control-label" for="pessoa_id">
+          Pessoa *
+          <i class="icon-circle-info" title="Digite o nome das atividades que gostaria de inscrever esta pessoa" rel="tooltip"></i>
+        </label>
+        {{=pessoa_widget}}
+      </div>
+    {{pass}}
+    
+    
+    {{ if atividade.tipo == 'ev' and insc_ativ: }}
+      {{ if atividade.requer_inscricao and insc_online_subativs_(db,atividade): }}
+        {{ if atividade.limitantes: }}
+          <p>
+            As combina&ccedil;&otilde;es poss&iacute;veis de inscri&ccedil;&atilde;o para este evento s&atilde;o:
+            {{=atividade.limitantes }}
+          </p>
+        {{ pass }}
+        {{ if ativis_disponiveis and not insc_grupo: }}
+          <div class="form-horizontal">
+            <div class="control-group">
+              <label class="control-label" for="id_subatividades_text">
+                Atividades
+                <i class="icon-circle-info" title="Digite o nome das atividades que gostaria de inscrever esta pessoa" rel="tooltip"></i>
+              </label>
+              <div class="controls">
+                <input type="text" name="subatividades_text" id="id_subatividades_text" autocomplete="off" value="" rel="popover" data-trigger="focus" data-title="Subatividade do Evento" data-content="<h5>Digite o nome de uma das atividades, que estão abaixo, que gostaria de se inscrever</h5><ul>{{ for subatividade in ativis_disponiveis: }}<li>{{=subatividade.nome}} {{ if subatividade.valor: }}<b>(R$: {{=subatividade.valor}})</b>{{ pass }} - <u>{{=subatividade.get_natureza_display}}</u></li>{{ pass ##END FOR }}</ul>" data-placement="right"/>
+                <input type="hidden" name="subatividades" id="id_subatividades" value=""/>
+              </div>
+            </div>
+          </div>
+        {{ pass }}
+      {{ else: }}
+        {{ #if atividade_inscricao.requer_inscricao and not insc_ativ: }}
+         adasdasdasdasd
+        {{ #else: }}
+          {{ if not atividade_inscricao.requer_inscricao: }}
+            {{ if atividade_inscricao.limitantes: }}
+              <div class="conteudo">Este evento possibilita a inscri&ccedil;&atilde;o em {{#=atividade_inscricao.limitantes_em_texto }}. </div><br>
+            {{ pass }}
+            <div class="form">
+              <div class="titulo">
+                Selecione as atividades que deseja se inscrever e bom evento!
+              </div>
+              {{=form}}
+            </div>
+            <div class="toolbar">
+              <input type="submit" name="submit" class="salvar" value="{{=submit_value}}">
+            </div>
+          {{ pass }}
+        {{ #pass }}
+      {{ pass }}
+    {{ else: }}
+       Clique em "Próximo passo" para continuar a se inscrever neste evento
+    {{ pass }}
+    
+    <!--Resumo da inscrição-->
+    {{ if len(atividades_inscritas): }}
+      <hr>
+      <h3>Resumo da inscrição</h3>
+      {{ if valor_total: }}
+        <p>
+          <u><i class="icon-usd"></i> Valor total a pagar: <b>R$: {{=valor_total}}</b></u>
+          [{{ if atividade_inscricao and atividade_pagamento and atividade_pagamento.forma_pagamento == "bo": }}
+              <i class="icon-barcode"></i> Boleto bancário
+          {{else:}}
+              No ato da inscrição
+          {{ pass }}]
+        </p>
+      {{ pass }}
+      <hr>
+      
+      {{ include "atividades/atividades_inscritas.html" }}
+      
+    {{ pass }}
+    <!--FIM-Resumo da inscrição-->
+    
+    <div class="form-actions">
+      <button type="submit" name="submit" class="btn" value="Cancelar">Cancelar</button>
+      <div class="btn-group pull-right">
+        {{ if insc_grupo: }}
+          <button type="submit" name="submit" value="Salvar" id="salvar_id" class="btn btn-primary">
+            Salvar
+          </button>
+        {{ pass }}
+        <input type="hidden" name="submit" value="{{if atividade.tipo=='ev': }}{{ if insc_ativ: }}Finalizar inscrição{{ else: }}Próximo passo{{ pass }}{{ else: }}Inscreva-se{{ pass }}" />
+        <button type="submit" id="finalizar_id" value="{{if atividade.tipo == 'ev': }}{{ if insc_ativ: }}Finalizar inscrição{{ else: }}Próximo passo{{ pass }}{{ else: }}Inscreva-se{{ pass }}" class="btn btn-primary">
+          {{if atividade.tipo == 'ev': }}
+            {{ if insc_ativ or insc_grupo: }}
+              Finalizar inscrição
+            {{ else: }}
+              Próximo passo
+            {{ pass }}
+          {{ else: }}
+            Inscreva-se
+          {{ pass }}
+        </button>
+      </div>
+    </div>
+  </form>
+{{ pass }}
+
+
+<script type="text/javascript" language="javascript" charset="utf-8">
+  $(document).ready(function(){
+    $('#id_subatividades_text').focus();
+  });
+</script>

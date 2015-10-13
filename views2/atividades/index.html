@@ -1,0 +1,88 @@
+{{extend 'default/portal_base.html' }}
+
+{{
+  from inscricao_utils import em_periodo_inscricao
+  from atividade_utils import atividade_termino,num_inscritos_
+
+  print atividades
+  n_atividades = len(atividades)
+  if n_atividades:
+    n_atividades_in_row = 4
+    n_rows = int(n_atividades/n_atividades_in_row) + (1 if n_atividades%n_atividades_in_row else 0)
+    n = 12/n_atividades_in_row 
+    }}
+    
+    {{for i in range(n_rows):
+      =XML('<div class="row">')
+      for a in atividades[i*n_atividades_in_row:(i+1)*n_atividades_in_row].render(): }}
+        {{atividade = a.atividade}}
+        
+        {{
+        vagas_limitadas = False
+        if atividade_termino(db,atividade) > request.now:
+          num_inscritos = num_inscritos_(db,atividade)
+          
+          if atividade.num_max and num_inscritos/atividade.num_max > 0.8:
+            color = ["header-color-red3","danger"]
+            vagas_limitadas = True
+          else:
+            color = ["header-color-green","success"]
+          pass
+          
+        else:
+          color = ["","light"]
+        pass
+        }}
+        <div class="col-xs-6 col-sm-3 pricing-box" style="height:100%">
+		      <div class="widget-box">
+			      <div class="widget-header {{=color[0]}}">
+				      <h5 class="bigger lighter" title="Data de Início da Atividade">{{=date2str(a[inicio]) }}</h5>
+			      </div>
+
+			      <div class="widget-body">
+				      <div class="widget-main">
+					      <ul class="list-unstyled spaced2">
+					        <li><img src="{{=URL('default','download',args=(atividade.miniatura,))}}" title="{{=atividade.nome}}" alt="{{=atividade.nome}}" class="col-xs-12"> </li>
+						      <li class="text-primary">
+						        <a href="{{=URL('atividades','atividade',args=(atividade.slug,))}}">{{=atividade.nome}}</a>
+						      </li>
+						      <li>{{=atividade.grupo_id}}</li>
+						      {{ if vagas_limitadas:}}
+                    <li class="text-danger"><h4>Corra! Vagas limitadas</h4></li>
+                  {{pass}}
+					      </ul>
+					      {{if atividade.valor:}}
+					      <hr />
+				        <div class="price">
+					        <span class="label label-lg label-inverse arrowed-in arrowed-in-right">
+						        R$: {{="%2.f" %atividade.valor}}
+					        </span>
+				        </div>
+				        {{pass}}
+				        {{ if atividade.certifica: }}
+		              <div class="price">
+                    <span class="label label-{{=color[1]}} label-lg arrowed arrowed-right float-right">
+                      Libera certificado
+                    </span>
+                  </div>
+                {{pass}}
+				      </div>
+
+				      <div>
+					      {{ if atividade.requer_inscricao and em_periodo_inscricao(db,atividade): }}
+		            <a class="btn btn-block btn-sm btn-{{=color[1]}}" href = "{{=URL('atividades','inscricao',args=(atividade.slug,)) }}" rel="tooltip" title="Inscreva-se">
+                  <i class="icon-share" ></i>
+                  Inscreva-se
+                </a>
+                {{pass}}
+				      </div>
+			      </div>
+		      </div>
+	      </div>
+      {{pass}}
+    </div>
+    <div class="hr hr8"></div>
+  {{pass}}
+{{pass}}
+
+

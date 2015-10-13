@@ -1,0 +1,77 @@
+{{
+import itertools
+import datetime
+from atividade_utils import atividade_termino,num_inscritos_,atividade_inicio
+
+inscricoes_encerradas = False
+termino = atividade_termino(db,a).date()
+inicio = atividade_inicio(db,a).date()
+today = request.now.date()
+
+finalizada = termino < today
+n_inscritos =  ('a.confirmados.count' if finalizada and a.confirmacao else num_inscritos_(db,a)) or 0
+
+delta = db(db.delta_inscricao.atividade_id==a.id).select(
+            db.delta_inscricao.ALL,orderby=db.delta_inscricao.data)
+
+data_min = None
+##Atribuindo a data minimina considerada
+if a.inicio_inscricao:
+    data_min = a.inicio_inscricao
+elif delta.first():
+    data_min = delta.first().data
+    pass
+    
+    
+
+##Atribuindo a data máxima considerada
+if a.termino_inscricao:
+    if today < a.termino_inscricao:
+        data_max = today
+    else:
+        data_max = a.termino_inscricao
+        inscricoes_encerradas = True
+    pass
+    
+elif inicio < today:
+    data_max = inicio
+    inscricoes_encerradas = True
+else:
+    data_max = today
+    pass   
+
+
+diff = data_max - (data_min or data_max)
+diff = 10 if diff.days > 10 else (diff.days + 1 )
+
+date_generator = (data_max - datetime.timedelta(days=i) for i in itertools.count() )
+
+dates = list(itertools.islice(date_generator,diff) )
+
+deltas = []
+for date in dates:
+    r = delta.find(lambda row: row.data==date).first()
+    if r:
+        deltas.append(r.n_inscricao)
+    else:
+        deltas.append(0)
+    pass
+
+pass
+}}
+<div class="infobox infobox-orange2 no-border">
+    <div class="infobox-chart">
+        <span class="sparkline" data-values="{{=','.join(map(str,deltas)) }}"></span>
+    </div>
+
+    <div class="infobox-data">
+        <span class="infobox-data-number smaller">{{=n_inscritos}} / {{=a.num_max or '~'}}</span>
+        <div class="infobox-content">inscritos {{=('( %s %% )' %(n_inscritos*100/a.num_max) ) if a.num_max else ''}}</div>
+    </div>
+</div>
+{{if not inscricoes_encerradas and len(deltas) > 1:}}
+<div class="badge badge-success">
+    {{=(deltas[-1]*100/(deltas[-2])) if (len(deltas)>1 and deltas[-2]) else '1000'}} %
+    <i class="icon-arrow-up"></i>
+</div>
+{{pass}}

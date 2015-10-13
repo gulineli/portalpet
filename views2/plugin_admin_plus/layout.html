@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{{=response.title or request.application}}</title>
+
+        <!--Mobile first-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!--IE Compatibility modes-->
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="msapplication-TileColor" content="#5bc0de">
+
+        {{include 'plugin_admin_plus/include_css.html'}}
+
+        {{block additional-css}}
+        {{end}}
+    </head>
+</html>
+
+<body>
+    <div id="wrap">
+        <div id="top">
+
+            <!-- .navbar -->
+            <nav class="navbar navbar-inverse navbar-static-top">
+
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <header class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a href="{{=URL('index')}}" class="navbar-brand">
+                        <br/> <span style="color: #E28B8B;">A</span>-<span style="color: #D85050;">PLUS</span>
+                    </a>
+                </header>
+
+                {{if auth.has_membership(role=plugins.admin_plus.superuser_role):}}
+                <ul class="nav navbar-nav">
+                    <li> <a href="{{=URL('plugin_admin_plus', 'install')}}">
+                            <i class="fa fa-play"></i>  {{=T('Agregar Tablas')}}</a> </li>
+                </ul>
+                {{pass}}
+
+                <div class="collapse navbar-collapse navbar-ex1-collapse">
+
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+                    <ul class="nav navbar-nav navbar-right navbar-user">
+
+                        {{name="%s %s" % (auth.user.first_name, auth.user.last_name)}}
+                        <li class="dropdown user-dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> {{=name}} <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{{=URL('user',args='profile')}}"><i class="fa fa-user"></i> {{=T('Perfil')}}</a></li>
+                                <li><a href="#"><i class="fa fa-gear"></i> Settings</a></li>
+                                <li class="divider"></li>
+                                <li><a href="{{=URL('user',args='logout')}}"><i class="fa fa-power-off"></i> {{=T('salir')}} </a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+
+                <!-- .navbar -->
+
+                <!-- /.navbar -->
+            </nav><!-- /.navbar -->
+
+            <!-- header.head -->
+            {{block top_head}}
+            {{end}}
+            <!-- end header.head -->
+
+
+        </div><!-- /#top -->
+        <div id="left">
+
+            <!-- #menu -->
+            <ul id="menu" class="collapse">
+                <li class="nav-header">{{=T('menu')}}</li>
+                <li class="nav-divider"></li>
+                <li class="active">
+                    <a href="{{=URL('plugin_admin_plus', 'index')}}">
+                        <i class="fa fa-dashboard"></i> {{=T('home')}} </a>
+                </li>
+
+                <li class="">
+                    <a href="javascript:;">
+                        <i class="fa fa-tasks"></i>
+                        <span class="link-title">{{=T('Tablas')}}</span>
+                        <span class="fa arrow"></span>
+                    </a>
+                    <ul>
+                        {{for tables in sidebar_tables():}}
+                        {{=tables}}
+                        {{pass}}
+
+                    </ul>
+                </li>
+
+
+                {{if settings.extra_sidebar:}}
+                <li class="">
+                    <a href="javascript:;">
+                        <i class="fa fa-archive"></i>
+                        <span class="link-title">{{=settings.extra_sidebar_title}}</span>
+                        <span class="fa arrow"></span>
+                    </a>
+                    <ul>
+                        {{for item in settings.extra_sidebar:}}
+                        {{=item}}
+                        {{pass}}
+
+                    </ul>
+                </li>
+                {{pass}}
+
+            </ul><!-- /#menu -->
+        </div><!-- /#left -->
+        <div id="content">
+            <div class="outer">
+                <div class="inner">
+
+                    <!--Begin Datatables-->
+                    <div class="row">
+                        <div class="col-lg-12">
+
+                            {{include}}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- end .inner -->
+        </div>
+        <!-- end .outer -->
+
+    </div>
+
+    <!-- end #content -->
+
+    <div id="footer">
+        <p>2014 &copy; Admin Plus / {{=__author__}}</p>
+    </div>
+
+
+
+    {{include 'plugin_admin_plus/include_js.html'}}
+
+    {{block additional-js}}
+    {{if session.error or response.error:}}
+    <script>
+        function generate(layout) {
+            var n = noty({
+                text: '{{=session.error or response.error}}',
+                type: 'error',
+                timeout: 10000,
+                killer: false,
+                dismissQueue: true,
+                layout: layout,
+                theme: 'defaultTheme'
+            });
+        }
+
+        function generateAll() {
+            generate('topRight');
+        }
+
+        $(document).ready(function() {
+
+            generateAll();
+
+            $('.error').css({
+                'color': 'red',
+                'margin-bottom': '8px'
+            });
+
+        });
+    </script>
+    {{else:}}
+    {{if session.flash or response.flash:}}
+    <script>
+        function generate(layout) {
+            var n = noty({
+                text: '{{=session.flash or response.flash}}',
+                type: 'alert',
+                timeout: 8000,
+                killer: false,
+                dismissQueue: true,
+                layout: layout,
+                theme: 'defaultTheme'
+            });
+        }
+
+        function generateAll() {
+            generate('topRight');
+        }
+
+        $(document).ready(function() {
+
+            generateAll();
+
+        });
+    </script>
+    {{pass}}
+    {{pass}}
+    {{end}}
+
+</body>
+</html>

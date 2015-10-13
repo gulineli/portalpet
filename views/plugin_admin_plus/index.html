@@ -1,0 +1,105 @@
+{{extend 'plugin_admin_plus/layout.html'}}
+
+{{block top_head}}
+<header class="head">
+    <div class="search-bar">
+        <a data-original-title="Show/Hide Menu" data-placement="bottom" data-tooltip="tooltip" class="accordion-toggle btn btn-primary btn-sm visible-xs" data-toggle="collapse" href="#menu" id="menu-toggle">
+            <i class="fa fa-expand"></i>
+        </a>
+        <form class="main-search">
+            <div class="input-group">
+                <input type="text" name="search" class="input-small form-control" placeholder="Search ...">
+                <span class="input-group-btn">
+                    <button class="btn btn-primary btn-sm text-muted" type="button"><i class="fa fa-search"></i></button>
+                </span>
+            </div>
+        </form>
+    </div>
+
+    <!-- ."main-bar -->
+    <div class="main-bar">
+        <h3>
+            <div class="btn-group">
+                <a data-placement="bottom" data-original-title="Show / Hide Sidebar" data-toggle="tooltip" class="btn btn-default btn-sm btn-circle" id="changeSidebarPos">
+                    <i class="fa fa-expand"></i>
+                </a>
+            </div>
+            <i class="fa fa-table"></i> {{=T('Tablas de la Base de Datos')}}</h3>
+    </div><!-- /.main-bar -->
+</header>
+
+{{end}}
+
+<!--End Datatables-->
+<div class="row">
+    <div class="container">
+
+        <div id="customContainer"></div>
+
+    </div>
+
+    {{for number, table in enumerate(sorted(data)):}}
+    <!-- .col-lg-6 -->
+    <div class="col-lg-{{=grid_table}}">
+        <div class="box">
+            <header>
+                <h5>{{=table.title()}}</h5>
+                <div class="toolbar">
+                    <div class="btn-group">
+                        <a href="#defaultTable{{=number+1}}"  data-toggle="collapse" class="btn btn-sm btn-default minimize-box">
+                            <i class="fa fa-angle-up"></i>
+                        </a>
+                        <a class="btn btn-danger btn-sm close-box">
+                            <i class="fa fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+            </header>
+            <div id="defaultTable{{=number+1}}" class="body collapse on">
+                <table class="table responsive-table">
+                    <thead>
+                        <tr>
+                            <th>{{=T('Registros')}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{=data[table]}}</td>
+                            <td>
+
+                                {{if auth.has_permission('read', table):}}
+                                <div class="btn-group">
+                                    <a data-placement="bottom" data-original-title="{{=T('Ver')}}" href="{{=URL('list', args=table)}}" data-toggle="tooltip" class="btn btn-default btn-sm">
+                                        <i class="fa fa-folder-open"></i>
+                                    </a>
+                                </div>
+                                {{pass}}
+
+                                {{if auth.has_permission('create', table):}}
+                                <div class="btn-group">
+                                    <a data-placement="bottom" data-original-title="{{=T('Agregar')}}" href="{{=URL('new', args=table)}}" data-toggle="tooltip" class="btn btn-default btn-sm">
+                                        <i class="fa fa-plus"></i>
+                                    </a>
+                                </div>
+                                {{pass}}
+
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div><!-- /.col-lg-6 -->
+    {{pass}}
+
+</div>
+
+
+
+{{block additional-js}}
+{{super}}
+<script>
+    metisTable();
+    metisSortable();
+</script>
+{{end}}

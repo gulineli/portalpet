@@ -1,0 +1,209 @@
+{{extend 'atividade/atividade_base.html' if not request.ajax else ''}}
+
+
+{{
+import itertools
+import datetime
+from atividade_utils import (atividade_termino,num_inscritos_,atividade_inicio,certifica_inscrito,
+                             num_presenca,listas_feitas,ordem_inscricao,frequencia_participacao)
+
+listas_finalizadas = listas_feitas(db,atividade) 
+inscricoes_encerradas = False
+termino = atividade_termino(db,atividade).date()
+inicio = atividade_inicio(db,atividade).date()
+today = request.now.date()
+
+finalizada = termino < today
+n_inscritos =  ('atividade.confirmados.count' if finalizada and atividade.confirmacao else num_inscritos_(db,atividade)) or 0
+
+delta = db(db.delta_inscricao.atividade_id==atividade.id).select(
+            db.delta_inscricao.ALL,orderby=db.delta_inscricao.data)
+
+##Atribuindo a data minimina considerada
+if atividade.inicio_inscricao:
+    data_min = atividade.inicio_inscricao
+else:
+    data_min = delta.first().data
+    pass
+    
+
+##Atribuindo a data máxima considerada
+if atividade.termino_inscricao:
+    if today < atividade.termino_inscricao:
+        data_max = today
+    else:
+        data_max = atividade.termino_inscricao
+        inscricoes_encerradas = True
+    pass
+    
+elif inicio < today:
+    data_max = inicio
+    inscricoes_encerradas = True
+else:
+    data_max = today
+    pass   
+
+diff = data_max - data_min
+diff = diff.days + 1
+
+
+date_generator = (data_max - datetime.timedelta(days=i) for i in itertools.count() )
+
+dates = list(itertools.islice(date_generator,diff) )
+
+deltas = []
+for date in dates:
+    r = delta.find(lambda row: row.data==date).first()
+    if r:
+        deltas.append(r.n_inscricao)
+    else:
+        deltas.append(0)
+    pass
+
+pass
+}}
+
+{{if not inscricoes_encerradas and len(deltas) > 1:}}
+<div class="badge badge-success">
+    {{=(deltas[-1]*100/(deltas[-2])) if (len(deltas)>1 and deltas[-2]) else '1000'}} %
+    <i class="icon-arrow-up"></i>
+</div>
+{{pass}}
+
+
+<div class="row">
+	<div class="col-xs-12 col-sm-12 widget-container-span">
+		<div class="widget-box">
+			<div class="widget-header">
+				<h5>Detalhes de Participação de {{=atividade.nome}}</h5>
+
+				<div class="widget-toolbar">
+					<a href="#" data-action="settings">
+						<i class="icon-cog"></i>
+					</a>
+
+					<a href="#" data-action="reload">
+						<i class="icon-refresh"></i>
+					</a>
+				</div>
+			</div>
+
+			<div class="widget-body">
+				<div class="widget-main">
+					<h4>Histórico de Inscrições:</h4>
+					<div class="row">
+					    <div class="col-xs-12 col-lg-6">
+					        <div class="infobox infobox-green no-border">
+                                <div class="infobox-chart">
+                                    <span class="sparkline" data-values="{{=','.join(map(str,deltas)) }}"></span>
+                                </div>
+                            </div>
+                            <br/>
+                            {{if atividade.num_max:}}
+                                <div class="infobox infobox-red no-border">
+                                    <div class="infobox-chart">
+                                        <div class="easy-pie-chart percentage" data-percent="{{=n_inscritos*100/atividade.num_max}}"">
+									        <span class="percent smaller-80">{{=n_inscritos*100/atividade.num_max}} %</span>
+								        </div>
+							        </div>
+									<div class="infobox-data">
+										<div class="infobox-content">Inscritos</div>
+										<div class="infobox-content">{{=n_inscritos}} / {{=atividade.num_max}}</div>
+									</div>
+                                </div>
+                            {{pass}}
+                            
+                            {{ if finalizada and listas_finalizadas: }}
+                                {{ presenca = num_presenca(db,atividade) }}
+                                  <div class="infobox infobox-red no-border">
+                                    <div class="infobox-chart">
+                                        <div class="easy-pie-chart percentage" data-size="50" data-color="#68BC31" data-percent="{{=presenca}}">
+                                            <span class="percent smaller-80">{{="%.0f" %presenca}} %</span>
+                                        </div>
+                                    </div>
+                                    <div class="infobox-data">
+										<div class="infobox-content">Presença</div>
+										<div class="infobox-content">{{=presenca*n_inscritos/100}}</div>
+									</div>
+                                  </div>
+                              {{ pass }}
+					    </div>
+					    <div class="col-xs-12 col-lg-6">
+					        <div class="alert alert-info">
+					            Ao lado você vizualiza como foi o histórico de inscrições nesta atividade.
+					            Você pode utilizar de ferramentas como redes sociais para potencializar o 
+					            alcance de sua atividade.
+					        </div>
+					    </div>
+					</div>
+					
+					
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="space"></div>
+<div class="hr-double"></div>
+
+<h4>Partifipantes inscritos</h4>
+<div style="overflow:auto;height:500px;">
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th width="20"></th>
+          <th width="7%">Nº</th>
+          <th>Nome</th>
+          {{ if finalizada: }}
+            {{ if listas_finalizadas: }}
+              <th width="10%">Frequ&ecirc;ncia</th>
+              {{ if atividade.certifica: }}
+                <th width="10%">Certificado</th>
+              {{ pass }}
+            {{ pass }}
+          {{ pass }}
+        </tr>
+      </thead>
+      <tbody>
+        {{ for i,insc in enumerate(db((db.inscrito.atividade_id==atividade.id) & (db.inscrito.fake==False)).select() ): }}
+            <tr>
+              <td>
+                {{ if atividade.confirmacao: }}
+                  {{ if insc.confirmado: }}
+                    <i class="icon-ok"></i>
+                  {{ else: }}
+                    <a href = "{{=URL('atividades','confirmar_inscricao',vars=dict(inscrito=insc.id)) }}">
+                      <i class="icon-warning-sign"></i>
+                    </a>
+                  {{ pass }}
+                {{ pass }}
+                <a href="{{ URL('atividades','remove_inscricao',vars=dict(inscrito=insc.id)) }}" onclick="return linkid(this);" class="clearboth">
+                  <i class="icon-trash"></i>
+                </a>
+              </td>
+              <td>
+                {{ if atividade.espera: }}
+                  {{ =ordem_inscricao(db,insc) }}
+                {{ else: }}
+                  {{ =i }}
+                {{ pass }}
+              </td>
+              <th>{{=insc.pessoa_id.nome }}</th>
+              {{ if finalizada: }}
+                {{ if listas_finalizadas: }}
+                  {{ pres = frequencia_participacao(db,insc) }}
+                  <td class="center">{{=pres }}%</td>
+                  {{ if atividade.certifica: }}
+                    <td class="center">
+                        {{=SPAN('SIM',_class="label label-success arrowed-in arrowed-in-right") if certifica_inscrito(db,insc) else SPAN('NÃO',_class="label label-danger arrowed")}}
+                    </td>
+                  {{ pass }}
+                {{ pass }}
+              {{ pass }}
+            </tr>
+        {{ pass }}
+      </tbody>
+    </table>
+</div>
+

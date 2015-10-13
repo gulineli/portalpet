@@ -1,0 +1,271 @@
+{{extend 'default/pessoa_base.html' }}
+{{errors = ret.errors if 'ret' in globals() else {} }}
+
+<form class="form-horizontal" method="post" enctype="multipart/form-data" action="#">
+    <div class="row">
+	    <div class="col-xs-12">
+		    <!-- PAGE CONTENT BEGINS -->
+		    <div>
+                <div id="user-profile-3" class="user-profile row">
+				    <div class="col-sm-offset-1 col-sm-10">
+					    <div class="space"></div>
+
+					    <form class="form-horizontal">
+						    <div class="tabbable">
+							    <ul class="nav nav-tabs padding-16">
+								    <li class="active">
+									    <a data-toggle="tab" href="#edit-basic">
+										    <i class="green icon-edit bigger-125"></i>
+										    Informações Básicas
+									    </a>
+								    </li>
+
+								    <li>
+									    <a data-toggle="tab" href="#edit-settings">
+										    <i class="purple icon-cog bigger-125"></i>
+										    Configuração
+									    </a>
+								    </li>
+							    </ul>
+
+							    <div class="tab-content profile-edit-tab-content">
+								    <div id="edit-basic" class="tab-pane in active">
+									    <h4 class="header blue bolder smaller">Geral</h4>
+
+									    <div class="row">
+										    <div class="col-xs-12 col-sm-4">
+										        <div class="form-group {{='has-error' if errors.get('nome') else ''}}">
+												    <label class="col-sm-12" for="pessoa_nome">Imagem</label>
+
+												    <div class="col-sm-12">
+													    <input type="file" id="pessoa_foto" class="file-ace" name=foto />
+												    </div>
+												    <img src="{{=URL('download',args=(pessoa.pessoa.miniatura,)) if pessoa.pessoa.foto else URL('static','assets/avatars/avatar2.png')}}" width="80" class="img-responsive thumbnail"/>
+											    </div>
+											    
+											    
+										    </div>
+										    <div class="vspace-xs"></div>
+
+										    <div class="col-xs-12 col-sm-8">
+											    <div class="form-group {{='has-error' if errors.get('nome') else ''}}">
+												    <label class="col-sm-3 control-label no-padding-right" for="pessoa_nome">Nome</label>
+
+												    <div class="col-sm-8">
+													    <input class="form-control" type="text" id="pessoa_nome" placeholder="Nome" name="nome" value="{{=pessoa.pessoa.nome}}" />
+												    </div>
+											    </div>
+											
+											    <div class="space-4"></div>
+											
+											    <div class="form-group">
+										            <label class="col-sm-3 control-label no-padding-right" for="pessoa_fisica_data_nascimento">Nascimento</label>
+
+										            <div class="col-sm-9">
+											            <div class="input-medium">
+												            <div class="input-group">
+													            <input class="input-medium date-picker" name="data_nascimento" id="pessoa_fisica_data_nascimento" type="text" data-date-format="{{=T('Y-m-d')}}" placeholder="{{=T('Y-m-d')}}" value="{{=date2str(pessoa.pessoa_fisica.data_nascimento)}}"/>
+													            <span class="input-group-addon">
+														            <i class="icon-calendar"></i>
+													            </span>
+												            </div>
+											            </div>
+										            </div>
+									            </div>
+											
+											    <div class="space-4"></div>
+
+								                <div class="form-group">
+									                <label class="col-sm-3 control-label no-padding-right">Sexo</label>
+
+									                <div class="col-sm-9">
+										                <label class="inline">
+											                <input name="sexo" value="M" type="radio" class="ace" {{='checked="checked"' if pessoa.pessoa_fisica.sexo=="M" else "" }}/>
+											                <span class="lbl"> Masculino</span>
+										                </label>
+
+										                &nbsp; &nbsp; &nbsp;
+										                <label class="inline">
+											                <input name="sexo" value="F" type="radio" class="ace" {{='checked="checked"' if pessoa.pessoa_fisica.sexo=="F" else "" }}/>
+											                <span class="lbl"> Feminino</span>
+										                </label>
+									                </div>
+								                </div>
+										    </div>
+									    </div>
+
+									    <hr />
+
+									    <div class="form-group">
+										    <label class="col-sm-3 control-label no-padding-right" for="pessoa_sobremim">Sobre mim:</label>
+
+										    <div class="col-sm-9">
+											    <textarea id="pessoa_sobremim" name="sobremim" class="form-control"></textarea>
+											    {{=SPAN(db.pessoa_fisica.sobremim.comment, _class='help-block')}}
+										    </div>
+									    </div>
+									
+									    <div class="space-4"></div>
+									    <div class="form-group">
+								            <label class="col-sm-3 control-label no-padding-right" for="pessoa_fisica_apelido">Apelido:</label>
+
+								            <div class="col-sm-9">
+								                <input class="form-control" id="pessoa_fisica_apelido" name="apelido" type="text" value="{{=date2str(pessoa.pessoa_fisica.apelido)}}"/>
+								            </div>
+							            </div>
+
+									    <div class="space"></div>
+									    <h4 class="header blue bolder smaller">Contato</h4>
+
+									    <div class="form-group">
+										    <label class="col-sm-3 control-label no-padding-right" for="auth_user_email">Email</label>
+
+										    <div class="col-sm-9">
+											    <span class="input-icon input-icon-right">
+												    <input type="email" name="email" id="auth_user_email" value="{{=pessoa.pessoa_fisica.user_id.email}}" disabled/>
+												    <i class="icon-envelope"></i>
+											    </span>
+											    {{=SPAN('O email não pode ser alterado manualmente.',_class='help-block')}}
+										    </div>
+									    </div>
+
+									    <div class="space-4"></div>
+
+									    <div class="form-group">
+										    <label class="col-sm-3 control-label no-padding-right" for="form-field-website">Website</label>
+
+										    <div class="col-sm-9">
+											    <span class="input-icon input-icon-right">
+												    <input type="url" id="pessoa_fisica_website" value="{{=pessoa.pessoa_fisica.website or ""}}" />
+												    <i class="icon-globe"></i>
+											    </span>
+										    </div>
+									    </div>
+
+									    <div class="space-4"></div>
+
+									    <div class="form-group">
+										    <label class="col-sm-3 control-label no-padding-right" for="form-field-phone">Telefone</label>
+
+										    <div class="col-sm-9">
+											    <span class="input-icon input-icon-right">
+												    <input type="text" id="form-field-phone" />
+												    <i class="icon-phone icon-flip-horizontal"></i>
+											    </span>
+										    </div>
+									    </div>
+
+									    <div class="space"></div>
+									    <h4 class="header blue bolder smaller">Social</h4>
+
+									    <div class="form-group">
+										    <label class="col-sm-3 control-label no-padding-right" for="form-field-facebook">Facebook</label>
+
+										    <div class="col-sm-9">
+											    <span class="input-icon">
+												    <input type="text" value="facebook_alexdoe" id="form-field-facebook" />
+												    <i class="icon-facebook blue"></i>
+											    </span>
+										    </div>
+									    </div>
+
+									    <div class="space-4"></div>
+
+									    <div class="form-group">
+										    <label class="col-sm-3 control-label no-padding-right" for="form-field-twitter">Twitter</label>
+
+										    <div class="col-sm-9">
+											    <span class="input-icon">
+												    <input type="text" value="twitter_alexdoe" id="form-field-twitter" />
+												    <i class="icon-twitter light-blue"></i>
+											    </span>
+										    </div>
+									    </div>
+
+									    <div class="space-4"></div>
+
+									    <div class="form-group">
+										    <label class="col-sm-3 control-label no-padding-right" for="form-field-gplus">Google+</label>
+
+										    <div class="col-sm-9">
+											    <span class="input-icon">
+												    <input type="text" value="google_alexdoe" id="form-field-gplus" />
+												    <i class="icon-google-plus red"></i>
+											    </span>
+										    </div>
+									    </div>
+								    </div>
+
+								    <div id="edit-settings" class="tab-pane">
+									    <div class="space-10"></div>
+
+									    <div>
+										    <label class="inline">
+											    <input type="checkbox" name="form-field-checkbox" class="ace" />
+											    <span class="lbl"> Make my profile public</span>
+										    </label>
+									    </div>
+
+									    <div class="space-8"></div>
+
+									    <div>
+										    <label class="inline">
+											    <input type="checkbox" name="form-field-checkbox" class="ace" />
+											    <span class="lbl"> Email me new updates</span>
+										    </label>
+									    </div>
+
+									    <div class="space-8"></div>
+
+									    <div>
+										    <label class="inline">
+											    <input type="checkbox" name="form-field-checkbox" class="ace" />
+											    <span class="lbl"> Keep a history of my conversations</span>
+										    </label>
+
+										    <label class="inline">
+											    <span class="space-2 block"></span>
+											    for
+											    <input type="text" class="input-mini" maxlength="3" />
+											    days
+										    </label>
+									    </div>
+								    </div>
+							    </div>
+						    </div>
+
+						    <div class="clearfix form-actions">
+							    <div class="col-md-offset-3 col-md-9">
+								    <button class="btn btn-info" type="submit">
+									    <i class="icon-ok bigger-110"></i>
+									    Save
+								    </button>
+
+								    &nbsp; &nbsp;
+								    <button class="btn" type="reset">
+									    <i class="icon-undo bigger-110"></i>
+									    Reset
+								    </button>
+							    </div>
+						    </div>
+					    </form>
+				    </div><!-- /span -->
+			    </div><!-- /user-profile -->
+		    </div>
+	    </div>
+    </div>
+</form>
+
+
+{{block script}}
+<script type="text/javascript">
+    jQuery(function($) {
+	    $('body').find('button[type=reset]').on(ace.click_event, function(){
+		    $('#user-profile-3 input[type=file]').ace_file_input('reset_input');
+	    });
+	    $('body').find('.date-picker').datepicker().next().on(ace.click_event, function(){
+		    $(this).prev().focus();
+	    })
+    });
+</script>
+{{end}}

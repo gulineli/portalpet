@@ -1,0 +1,70 @@
+{{extend 'plugin_admin_plus/layout.html'}}
+
+
+{{block additional-css}}
+<link href="{{=URL('static','plugin_admin_plus/css/jquery.datetimepicker.css')}}" rel="stylesheet" type="text/css" />
+{{end}}
+
+{{block top_head}}
+<header class="head">
+
+    <div class="search-bar">
+        <a data-original-title="Show/Hide Menu" data-placement="bottom" data-tooltip="tooltip" class="accordion-toggle btn btn-primary btn-sm visible-xs" data-toggle="collapse" href="#menu" id="menu-toggle">
+            <i class="fa fa-expand"></i>
+        </a>
+    </div>
+
+    <!-- ."main-bar -->
+    <div class="main-bar">
+        <h3>
+            {{tabla=singular(table)}}
+            <div class="btn-group">
+                <a data-placement="bottom" data-original-title="Show / Hide Sidebar" data-toggle="tooltip" class="btn btn-default btn-sm btn-circle" id="changeSidebarPos">
+                    <i class="fa fa-expand"></i>
+                </a>
+            </div>
+            <i class="fa fa-table"></i> {{=T('Editar')}} {{=tabla}}</h3>
+    </div><!-- /.main-bar -->
+</header>
+
+{{end}}
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="box dark">
+            <header>
+                <div class="icons">
+                    <a href="{{=URL('list', args=(request.args(0)))}}"><img alt="Show" src="{{=URL('static','plugin_admin_plus/img/show.png')}}" title="{{=T('ver')}}" /></a>
+                    {{if auth.has_permission('delete', table):}}
+                    <a href="{{=URL('delete', args=(request.args(0), row['id']))}}" class="button"><img alt="Cross" src="{{=URL('static','plugin_admin_plus/img/cross.png')}}" title="{{=T('eliminar')}}" /></a>
+                    {{pass}}
+                </div>
+                <h5>{{=singular(table)}}</h5>
+
+                <!-- .toolbar -->
+                <div class="toolbar">
+                    <ul class="nav">
+                        <li>
+                            <a class="minimize-box" data-toggle="collapse" href="#div-1">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div><!-- /.toolbar -->
+            </header>
+            <div id="div-1" class="accordion-body collapse in body">
+                {{=form}}
+            </div>
+        </div>
+    </div>
+</div>
+
+{{block additional-js}}
+{{super}}
+<script src="{{=URL('static','plugin_admin_plus/js/jquery.datetimepicker.js')}}" type="text/javascript"></script>
+<script>
+    $('#tiempos').datetimepicker({format: 'd/m/Y H:i:s'});
+    $('.date').datetimepicker({format: 'Y-m-d'});
+    formGeneral();
+</script>
+{{end}}

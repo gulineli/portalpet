@@ -1,0 +1,325 @@
+# -*- coding: utf-8 -*-
+
+##-------------------Migrando os dados dos grupos-------------------------------
+##Grupos
+if not control_migration.grupo:
+    db.grupo.truncate()
+
+    for g in ldb(ldb.Grupo_grupo).select():
+        pessoa_id = db(db.pessoa.original_id==g.id_pessoa_id).select().first()
+        foto = None
+        if pessoa_id:
+            if g.foto and os.path.exists(os.path.join(MEDIA_PATH,g.foto)):
+                foto = open(os.path.join(MEDIA_PATH,g.foto), 'rb')
+
+            cidade_id = db(db.cidade.original_id==g.cidade_id).select().first()
+            pessoa_juridica_id = db(db.pessoa_juridica.original_id==g.instituicao_id
+                                ).select().first()
+            new_grupo = db.grupo.insert(
+                    original_id=g.id,
+                    nome=g.nome,
+                    data_fundacao=g.data_fundacao,
+                    historico=g.historico,
+                    cidade_id=cidade_id,
+                    curso=g.curso,
+                    instituicao_id=pessoa_juridica_id,
+                    foto=db.grupo.foto.store(foto, os.path.basename(g.foto)) if foto else None,
+                    ativo=g.ativo,
+                    configuracao_id=g.configuracao_id,
+                    email=g.email,
+                    slug=IS_SLUG()("%s %s" %(g.nome, db.cidade._format(cidade_id) ) )[0],
+                    pessoa_id=pessoa_id,
+                    twitter=g.twitter)
+
+            print 'Grupo: ',new_grupo,new_grupo.slug
+        else:
+            print 'ERRO: GRUPO %s' %g.nome
+    control_migration.update_record(grupo=True)
+
+
+##Integrantes
+if not control_migration.integrante:
+    db.integrante.truncate()
+
+    def create_integrante(i,tipo='i'):
+        grupo = db(db.grupo.original_id==i.grupo_id).select().first()
+        pessoa = db(db.pessoa.original_id==i.pessoa_id).select().first()
+        if pessoa and grupo:
+            new_integrante = db.integrante.insert(
+                                    original_id=i.id,
+                                    pessoa_id=pessoa.id,
+                                    grupo_id=grupo.id,
+                                    tipo=tipo,
+                                    nasc=i.nasc,
+                                    endereco=i.end if tipo in ['i','ie'] else None,
+                                    orkut=i.orkut,
+                                    lattes=i.lattes,
+                                    ing_Facu=i.ing_Facu if tipo in ['i','ie'] else None,
+                                    ing_Pet=i.ing_Pet,
+                                    ing_Bolsa=i.ing_Bolsa if tipo in ['i','ie'] else None,
+                                    saida_Bolsa=i.saida_Bolsa if tipo in ['i','ie'] else None,
+                                    saida_Pet = i.saida_Pet if tipo in ['ie','te'] else None
+                                )
+            print 'Integrante: ', tipo, new_integrante.id
+        else:
+            print 'erro: ',i
+
+    for i in legacy_db(ldb.Grupo_integrante).select():
+        create_integrante(i,tipo='i')
+
+    for i in legacy_db(ldb.Grupo_egresso).select():
+        create_integrante(i,tipo='ie')
+
+    for i in legacy_db(ldb.Grupo_tutor).select():
+        create_integrante(i,tipo='t')
+
+    for i in legacy_db(ldb.Grupo_tutor_egresso).select():
+        create_integrante(i,tipo='te')
+
+    control_migration.update_record(integrante=True)
+
+
+##Pautas
+if not control_migration.pauta:
+    db.pauta.truncate()
+
+    for p in ldb(ldb.Grupo_pauta).select():
+        grupo = db(db.grupo.original_id==p.grupo_id).select().first()
+
+        new_pauta = db.pauta.insert(
+                original_id=p.id,
+                nome=p.pauta,
+                grupo_id=grupo
+                )
+
+        print 'Pauta: ',new_pauta
+    control_migration.update_record(pauta=True)
+
+
+##Arquivos
+if not control_migration.arquivo:
+    db.arquivo.truncate()
+
+    for a in ldb(ldb.Portal_arquivo).select():
+        if a.arquivo and os.path.exists(os.path.join(MEDIA_PATH,a.arquivo)):
+            arquivo = open(os.path.join(MEDIA_PATH,a.arquivo), 'rb')
+
+            new_arquivo = db.arquivo.insert(
+                    original_id=a.id,
+                    nome=a.nome,
+                    keyword=a.keyword,
+                    tipo=a.tipo,
+                    data=a.data,
+                    arquivo=db.arquivo.arquivo.store(arquivo, os.path.basename(a.arquivo)),
+                    comentario=a.comentario
+                )
+
+            print 'Arquivo: ',new_arquivo
+        else:
+            print 'Arquivo: ERRO!',a.id,os.path.join(MEDIA_PATH,a.arquivo)
+
+    control_migration.update_record(arquivo=True)
+
+
+##Reunioes
+if not control_migration.reuniao:
+    db.reuniao.truncate()
+
+    for r in ldb(ldb.Grupo_reuniao).select():
+        grupo = db(db.grupo.original_id==r.grupo_id).select().first()
+        pauta = db(db.pauta.original_id==r.pauta_id).select().first()
+        pessoa = db(db.pessoa.original_id==r.secretario_id).select().first()
+        arquivo = db(db.arquivo.original_id==r.arquivo_id).select().first()
+
+        new_reuniao = db.reuniao.insert(
+                original_id=r.id,
+                grupo_id=grupo,
+                inicio=r.inicio,
+                termino=r.termino,
+                pauta_id=pauta.id,
+                secretario_id=pessoa.id,
+                arquivo_id=arquivo.id if arquivo else None,
+                updated=r.updated
+            )
+
+        print 'Reuniao: ',new_reuniao
+    control_migration.update_record(reuniao=True)
+
+
+##Reuniao Ausentes
+if not control_migration.reuniao_ausentes:
+    db.reuniao_ausentes.truncate()
+
+    for r in ldb(ldb.Grupo_reuniao_ausentes).select():
+        reuniao = db(db.reuniao.original_id==r.reuniao_id).select().first()
+        pessoa = db(db.pessoa.original_id==r.pessoa_id).select().first()
+
+        new_reuniao_ausentes = db.reuniao_ausentes.insert(
+                original_id=r.id,
+                reuniao_id=reuniao.id,
+                pessoa_id=pessoa.id,
+            )
+
+        print 'Reuniao ausentes: ',new_reuniao_ausentes
+    control_migration.update_record(reuniao_ausentes=True)
+
+
+## Assuntos
+if not control_migration.assunto:
+    db.assunto.truncate()
+
+    for a in ldb(ldb.Grupo_assunto).select():
+        ct = ldb(ldb.django_content_type.id==a.content_type_id).select().first()
+
+        table = ct.model.lower() if ct else None
+        grupo = db(db.grupo.original_id==a.grupo_id).select().first()
+
+        new_assunto = db.assunto.insert(
+            original_id=a.id,
+            table_name=table,
+            object_id=a.object_id,
+            assunto=a.assunto,
+            grupo_id=grupo.id
+        )
+
+        print 'Assunto: ',new_assunto
+    control_migration.update_record(assunto=True)
+
+
+## Topicos
+if not control_migration.topico:
+    db.topico.truncate()
+
+    for t in ldb(ldb.Grupo_topico).select():
+        assunto = db(db.assunto.original_id==t.assunto_id).select().first()
+        grupo = db(db.grupo.original_id==t.grupo_id).select().first()
+        if not assunto:
+            print 'Topico - erro!', t.id
+
+
+        new_topico = db.topico.insert(
+                original_id=t.id,
+                assunto_id=assunto.id if assunto else None,
+                texto=t.texto,
+                comentario=t.comentario,
+                grupo_id=grupo.id,
+                data=t.data,
+                limite=t.limite,
+                data_acao=t.data_acao,
+                closed=t.closed,
+                encerrado=t.encerrado
+            )
+
+        print 'Topico: ',new_topico
+    control_migration.update_record(topico=True)
+
+
+## Reuniao_Topicos
+if not control_migration.reuniao_topicos:
+    db.reuniao_topicos.truncate()
+
+    for r in ldb(ldb.Grupo_reuniao_topicos).select():
+        reuniao = db(db.reuniao.original_id==r.reuniao_id).select().first()
+        topico = db(db.topico.original_id==r.topico_id).select().first()
+
+        new_reuniao_topicos = db.reuniao_topicos.insert(
+                original_id=r.id,
+                reuniao_id=reuniao.id,
+                topico_id=topico.id
+            )
+
+        print 'Reuniao Topicos: ',new_reuniao_topicos
+    control_migration.update_record(reuniao_topicos=True)
+
+
+## Topicos Pautas
+if not control_migration.topico_pautas:
+    db.topico_pautas.truncate()
+
+    for r in ldb(ldb.Grupo_topico_pautas).select():
+        pauta = db(db.pauta.original_id==r.pauta_id).select().first()
+        topico = db(db.topico.original_id==r.topico_id).select().first()
+
+        if topico and pauta:
+            new_topico_pautas = db.topico_pautas.insert(
+                    original_id=r.id,
+                    pauta_id=pauta.id,
+                    topico_id=topico.id
+                )
+
+            print 'Topicos Pautas: ',new_topico_pautas
+        else:
+            print 'Erro: Topico pauta: ',r.id
+    control_migration.update_record(topico_pautas=True)
+
+
+## Posts
+if not control_migration.post:
+    db.post.truncate()
+
+    for r in ldb(ldb.Grupo_post).select():
+        autor = db(db.pessoa.original_id==r.autor_id).select().first()
+        topico = db(db.topico.original_id==r.topico_id).select().first()
+
+        if topico and autor:
+            new_post = db.post.insert(
+                    original_id=r.id,
+                    topico_id=topico.id,
+                    autor_id=autor.id,
+                    data=r.data,
+                    texto=r.texto,
+                    closed=r.closed
+                )
+
+            print 'Post: ',new_post
+        else:
+            print 'Erro: Post ',r.id
+    control_migration.update_record(post=True)
+
+
+##--------------------------------------------------------------------------------------##
+
+##Atribuindo as permissoes
+## Grupo
+if not control_permission.grupo:
+    for grupo in db(db.grupo).select():
+
+        ##Criando os Grupos_de_usuarios Correspondentes
+        descriptions = ['Integrante','Tutor','Egresso']
+        for i,description in enumerate(descriptions):
+            new_group = db.auth_group.insert(
+                            role = "%s_%s" %( grupo.id,description.lower() ),
+                            description = description,
+                            full_description = "%ss %s" %(description,grupo.nome)
+                        )
+            print u'Group: ',new_group
+
+            ##Adicionando as permissões ao grupo
+            if i<=1:
+                permissions = 'read', 'update', 'select'
+                for p in permissions:
+                    auth.add_permission(new_group, p, db.grupo, grupo.id)
+
+                ##Somente Tutores podem remover os grupos
+                if i==1:
+                    auth.add_permission(new_group, 'delete', db.grupo, grupo.id)
+
+    control_permission.update_record(grupo=True)
+
+
+## Integrante
+if not control_permission.integrante:
+    for integrante in db(db.integrante).select():
+        ##Atribuindo permissao ao integrante
+        grupo = integrante.grupo_id
+
+        g = {'i':"%s_integrante",'ie':"%s_egresso",'t':"%s_tutor",'te':"%s_egresso"}
+        g = g[integrante.tipo] %grupo.id
+        user = integrante.pessoa_id.user_id
+        if user:
+            new_membership = auth.add_membership(g,user.id)
+            print u'membership: ',new_membership,user.id
+        else:
+            print 'Erro',integrante
+
+    control_permission.update_record(integrante=True)

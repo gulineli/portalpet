@@ -1,0 +1,84 @@
+{{extend 'plugin_admin_plus/layout.html'}}
+
+
+{{block top_head}}
+<header class="head">
+    <!-- ."main-bar -->
+    <div class="main-bar">
+        <h3>
+            {{tabla=singular(table)}}
+            <div class="btn-group">
+                <a data-placement="bottom" data-original-title="Show / Hide Sidebar" data-toggle="tooltip" class="btn btn-default btn-sm btn-circle" id="changeSidebarPos">
+                    <i class="fa fa-expand"></i>
+                </a>
+            </div>
+            <i class="fa fa-table"></i> {{=T('Eliminar registro de ')}} {{=tabla}}</h3>
+    </div><!-- /.main-bar -->
+</header>
+
+{{end}}
+
+
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="box dark">
+            <header>
+                <div class="icons">
+                    <a href="{{=URL('list', args=(request.args(0)))}}"><img alt="Show" src="{{=URL('static','plugin_admin_plus/img/show.png')}}" title="{{=T('ver')}}" /></a>
+                    {{if auth.has_permission('update', db[request.args(0)]):}}
+                    <a href="{{=URL('edit', args=(request.args(0), row['id']))}}"><img alt="Edit" src="{{=URL('static','plugin_admin_plus/img/edit.png')}}" title="{{=T('Editar')}}" /></a>
+                    {{pass}}
+                </div>
+                <h5>{{=singular(table)}}</h5>
+
+                <!-- .toolbar -->
+                <div class="toolbar">
+                    <ul class="nav">
+                        <li>
+                            <a class="minimize-box" data-toggle="collapse" href="#div-1">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div><!-- /.toolbar -->
+            </header>
+
+            <div id="div-1" class="accordion-body collapse in body">
+                <h4>{{=T('id')}} :</h4>
+                <div class="body clearfix">
+                    <blockquote>
+                        # {{=ids}}
+                    </blockquote>
+                </div>
+                </li>
+
+
+                <button class="btn btn-metis-1" data-toggle="modal" data-target="#myModal">
+                    {{=T('Eliminar')}}
+                </button>
+
+                <!-- Modal -->
+                <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title" id="myModalLabel">{{=T('Seguro que deseas eliminarlo ? ')}}</h4>
+                            </div>
+                            <div class="modal-footer">
+                                <form accept-charset="UTF-8" action="" class="edit_user" method="post">
+                                    <input type="hidden" name="_formname" value="delete_confirmation" /><div class='group navform wat-cf'>
+                                        <button class='btn btn-metis-1' type='submit'>
+                                            {{=T('Eliminar')}}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div><!-- /.modal -->
+            </div>
+        </div>
+    </div>
+</div>

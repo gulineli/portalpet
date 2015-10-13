@@ -1,0 +1,427 @@
+# -*- coding: utf-8 -*-
+
+
+##-------------------Migrando os dados das atividades:--------------------------
+
+##Atividade
+if not control_migration.atividade:
+#    db.atividade.truncate()
+    
+    for a in ldb(ldb.Atividade_atividade).select():
+        grupo = db(db.grupo.original_id==a.grupo_id).select().first()
+        
+        foto = None
+        if a.foto and os.path.exists(os.path.join(MEDIA_PATH,a.foto)):
+            foto = open(os.path.join(MEDIA_PATH,a.foto), 'rb') 
+        
+        new_ativ = db.atividade.insert(
+                        original_id = a.id,
+                        grupo_id=grupo,
+                        nome=a.nome,
+                        tipo=a.natureza,
+                        classificacao=a.clas,
+                        obs=a.obs,
+                        descricao=a.descricao,
+                        foto=db.atividade.foto.store(foto, os.path.basename(a.foto)) if foto else None,
+                        certifica=a.cert,
+                        frequencia_minima=a.min_frequen,
+                        certificados_impressos=a.cert_imp,
+                        mini_relatorio=a.mini_rela,
+                        requer_inscricao=a.inscricao,
+                        instrucoes=a.instrucoes,
+                        msgonerror=a.msgonerror,
+                        tutorial=a.tutorial,
+                        tutorial_url=a.tutorial_url,
+                        insc_mestra=a.insc_mestra,
+                        insc_online=a.insc_online,
+                        espera=a.espera,
+                        inicio_inscricao=a.inicio_inscr,
+                        termino_inscricao=a.termino_inscr,
+                        num_max=a.num_max,
+                        valor=a.valor,
+                        confirmacao=a.conf,
+                        inicio_confirmacao=a.inicio_conf,
+                        termino_confirmacao=a.termino_conf,
+                        limitantes=(a.limitante or '').split(';'),
+                        num_chamadas=a.num_chamada,
+                        divulgar=a.divulgar,
+                    )
+        if a.aceita_artigos:
+            ficha_avaliacao = None
+            if a.ficha_avaliacao and os.path.exists(os.path.join(MEDIA_PATH,a.ficha_avaliacao)):
+                ficha_avaliacao = open(os.path.join(MEDIA_PATH,a.ficha_avaliacao), 'rb') 
+                
+            new_congresso = db.atividade_congresso.insert(
+                            atividade_id=new_ativ,
+                            data_limite_submissao=a.data_limite_submissao,
+                            aceita_artigos=True,
+                            num_artigos=a.num_artigos,
+                            num_autores=a.num_autores,
+                            dias_avaliacao=a.dias_avaliacao,
+                            carta_aceite=a.carta_aceite,
+                            prazo_correcao=a.prazo_correcao,
+                            ficha_avaliacao=ficha_avaliacao,
+                            num_artigos_grupo=a.num_artigos_grupo,
+                            vincular_grupo=a.vincular_grupo,
+            )
+            
+        print 'Atividade: ',new_ativ
+        
+    ##Finalizada migração da Atividade
+    control_migration.update_record(atividade=True)
+
+
+##Periodo
+if not control_migration.atividade_periodo:
+#    db.atividade_periodo.truncate()
+    
+    
+    periodos_id = ldb(ldb.Atividade_atividade_periodos)._select(ldb.Atividade_atividade_periodos.periodo_id)
+
+    for p in legacy_db(legacy_db.Atividade_periodo.id.belongs(periodos_id)).select(): ##Seleciona apenas os periodos que possuem uma atividade vinculada
+        atividade_periodo = ldb(ldb.Atividade_atividade_periodos.periodo_id==p.id).select().first()
+        
+        atividade = db(db.atividade.original_id==atividade_periodo.atividade_id).select().first()
+        new_periodo = db.atividade_periodo.insert(
+                            atividade_id=atividade.id,
+                            inicio=p.inicio,
+                            termino=p.termino
+                    )
+        print 'Periodo - Atividade: ', atividade.nome,new_periodo
+    
+    control_migration.update_record(atividade_periodo=True)
+
+
+##Inscritos
+if not control_migration.inscrito:
+#    db.inscrito.truncate()
+#    db.delta_inscricao.truncate()
+    
+    for i in legacy_db(ldb.Atividade_inscrito).select():
+        atividade = db(db.atividade.original_id==i.atividade_id).select().first()
+        pessoa = db(db.pessoa.original_id==i.pessoa_id).select().first()
+        new_inscrito = db.inscrito.insert(
+                            original_id=i.id,
+                            atividade_id = atividade.id,
+                            pessoa_id = pessoa.id,
+                            data_insc = i.data_insc,
+                            confirmado = bool(i.confirmado),
+                            pago = bool(i.pago),
+                            valor_pago = i.valor_pago,
+                            code_verification = i.code_verification,
+                            fake = bool(i.fake),
+                            finalizada = bool(i.finalizada)
+                    )
+        print 'Inscrito: ',atividade.nome,new_inscrito
+    
+    control_migration.update_record(inscrito=True)
+
+
+##Lista_presenca
+if not control_migration.lista_presenca:
+#    db.lista_presenca.truncate()
+    
+    for l in legacy_db(ldb.Atividade_lista_presenca).select():
+        atividade = db(db.atividade.original_id==l.atividade_id).select().first()
+        new_lista = db.lista_presenca.insert(
+                            original_id=l.id,
+                            atividade_id = atividade.id,
+                            n_lista=l.n_lista,
+                            finalizada=bool(l.finalizada)
+                    )
+        print 'Lista_presenca: ', atividade.nome,new_lista
+    
+    control_migration.update_record(lista_presenca=True)
+
+
+##Lista_presenca_pessoas
+if not control_migration.lista_presenca_pessoas:
+#    db.lista_presenca_pessoas.truncate()
+    
+    for p in legacy_db(ldb.Atividade_lista_presenca_pessoas).select():
+        lista_presenca = db(db.lista_presenca.original_id==p.lista_presenca_id).select().first()
+        inscrito = db(db.inscrito.original_id==p.inscrito_id).select().first()
+        pessoa_id = db(db.pessoa.original_id==inscrito.pessoa_id).select().first()
+        if pessoa_id:
+            new_presenca = db.lista_presenca_pessoas.insert(
+                                original_id=p.id,
+                                lista_presenca_id = lista_presenca.id,
+                                pessoa_id=pessoa_id.id
+                        )
+            print 'Lista_presenca_PESSOAS:', lista_presenca.atividade_id,lista_presenca.n_lista,new_presenca
+        else:
+            print 'Erro: Lista_presenca_PESSOAS:',inscrito.pessoa_id
+    
+    control_migration.update_record(lista_presenca_pessoas=True)
+
+
+##Avaliador
+if not control_migration.artigo:
+#    db.artigo.truncate()
+    
+    for a in legacy_db(ldb.Atividade_atividade_avaliadores).select():
+        atividade = db(db.atividade.original_id==a.atividade_id).select().first()
+        av = ldb(ldb.Atividade_avaliador.id==a.avaliador_id).select().first()
+        pessoa = db(db.pessoa.original_id==av.pessoa_id ).select().first()
+        
+        new_avaliador = db.avaliador.insert(
+                                original_id=av.id,
+                                atividade_id=atividade.id,
+                                pessoa_id=pessoa.id,
+                                areas_conhecimento=av.areas_conhecimento
+                        )
+    
+        print 'Avaliador: ',new_avaliador.id
+    control_migration.update_record(avaliador=True)
+
+    
+##Artigo
+if not control_migration.artigo:
+#    db.artigo.truncate()
+    
+    for a in legacy_db(ldb.Atividade_artigo).select():
+        pessoa = db(db.pessoa.original_id==a.dono_id).select().first()
+        grupo = db(db.grupo.original_id==a.grupo_id).select().first()
+        atividade = db(db.atividade.original_id==a.atividade_id).select().first()
+        avaliador = db(db.avaliador.original_id==a.avaliador_id).select().first()
+        
+        new_artigo = db.artigo.insert(
+                                original_id=a.id,
+                                dono_id=pessoa.id if pessoa else None,
+                                grupo_id=grupo.id if grupo else None,
+                                avaliador_id=avaliador.id if avaliador else None,
+                                atividade_id=atividade.id,
+                                area_conhecimento=a.area_conhecimento
+                        )
+    
+        print 'Artigo: ',new_artigo.id
+    control_migration.update_record(artigo=True)
+
+
+##Avaliacao
+if not control_migration.avaliacao:
+#    db.versao.truncate()
+
+    for a in legacy_db(ldb.Atividade_avaliacao).select():
+        
+        new_avaliacao = db.avaliacao.insert(
+                                original_id=a.id,
+                                comentarios=a.comentarios,
+                                parecer=a.parecer,
+                                data_avaliacao=a.data_avaliacao,
+                                liberar=bool(a.liberar)
+        )
+        print 'Avaliacao: ',new_avaliacao.id
+    control_migration.update_record(avaliacao=True)
+    
+    
+##Versao
+if not control_migration.versao:
+#    db.versao.truncate()
+
+    for v in legacy_db(ldb.Atividade_versao).select():
+    
+        avaliacao = db(db.avaliacao.original_id==v.avaliacao_id).select().first()
+        artigo = db(db.artigo.original_id==v.artigo_id).select().first()
+        if v.arquivo and os.path.exists(os.path.join(MEDIA_PATH,v.arquivo)):
+            arquivo = open(os.path.join(MEDIA_PATH,v.arquivo), 'rb')
+            aux = os.path.basename(v.arquivo).split('.')
+            filename = "%s.%s" %(aux[0][:50],aux[1])
+            new_versao = db.versao.insert(
+                                    original_id=v.id,
+                                    titulo=v.titulo,
+                                    arquivo=db.versao.arquivo.store(arquivo, filename),
+                                    revisao=v.versao,
+                                    avaliacao_id=avaliacao.id if avaliacao else None,
+                                    data_envio=v.data_envio,
+                                    artigo_id=artigo.id,
+                                    enviado =bool(v.enviado)
+                            )
+        
+            print 'Versao: ',new_versao.id
+        else:
+            print 'Versao: ERROR %s' %v.id
+    control_migration.update_record(versao=True)
+    
+    
+##Autores
+if not control_migration.autor:
+#    db.autor.truncate()
+    
+    for v_a in legacy_db(ldb.Atividade_versao_autores).select():
+        versao = db(db.versao.original_id==v_a.versao_id).select().first()
+        autor = ldb(ldb.Atividade_autor.id==v_a.autor_id).select().first()
+        pessoa = db(db.pessoa.original_id==autor.pessoa_id).select().first()
+        
+        if versao:
+            new_autor = db.autor.insert(
+                                    versao_id=versao.id,
+                                    ordem=autor.ordem,
+                                    pessoa_id=pessoa.id if pessoa else None,
+                                    nome=autor.nome,
+                                    email=autor.email
+                                    
+                            )
+    
+            print 'Autor: ',new_autor.id
+        else:
+            print 'Autor:ERROR %s', v_a.id
+        
+    control_migration.update_record(autor=True)
+    
+
+##SUB_ATIVIDADES
+if not control_migration.atividade_subatividades:
+#    db.atividade_subatividades.truncate()
+    
+    for s in legacy_db(ldb.Atividade_atividade_sub_atividades).select():
+        atividade = db(db.atividade.original_id==s.from_atividade_id).select().first()
+        subatividade = db(db.atividade.original_id==s.to_atividade_id).select().first()
+        new_sub_atividade = db.atividade_subatividades.insert(
+                            original_id=s.id,
+                            mestra_id = atividade.id,
+                            subatividade_id = subatividade.id
+                    )
+        print 'Subatividades: ',atividade.nome,subatividade.nome,new_sub_atividade
+    
+    control_migration.update_record(atividade_subatividades=True)
+
+
+##Convenio
+if not control_migration.convenio:
+#    db.convenio.truncate()
+    
+    for c in legacy_db(ldb.Financeiro_convenio).select():
+        new_convenio = db.convenio.insert(
+                            original_id=c.id,
+                            table_name='atividade',
+                            object_id=c.object_id,
+                            agencia=c.agencia,
+                            conta=c.conta,
+                            banco=c.banco,
+                            cedente=c.cedente,
+                            convenio=c.convenio,
+                            carteira=c.carteira
+                    )
+        print 'Convenio: ',c.convenio,new_convenio
+    
+    control_migration.update_record(convenio=True)
+    
+
+##DETALHES PAGAMENTO
+if not control_migration.atividade_pagamento:
+#    db.atividade_pagamento.truncate()
+    
+    for d in legacy_db(ldb.Atividade_detalhe_pagamento).select():
+        atividade = db(db.atividade.original_id==d.atividade_id).select().first()
+        convenio = db(db.convenio.original_id==d.convenio_id).select().first()
+        new_atividade_pagamento = db.atividade_pagamento.insert(
+                            original_id=d.id,
+                            atividade_id=atividade,
+                            forma_pagamento=d.forma_pagamento,
+                            convenio_id=convenio,
+                            data_vencimento=d.data_vencimento,
+                            instrucoes=d.instrucoes,
+                            gerar_boleto_por_grupo=d.gerar_boleto_por_grupo
+                    )
+        print 'Detalhes de Pagamento: ',atividade.nome,new_atividade_pagamento
+    
+    control_migration.update_record(atividade_pagamento=True)
+    
+
+##BOLETOS
+if not control_migration.boleto:
+#    db.boleto.truncate()
+    
+    for b in legacy_db(ldb.Financeiro_numero_sequencial).select():
+        convenio = db(db.convenio.original_id==b.convenio_id).select().first()
+        pessoa = db(db.pessoa.original_id==b.pessoa_id).select().first()
+        new_boleto = db.boleto.insert(
+                            original_id=b.id,
+                            convenio_id=convenio,
+                            nosso_numero=b.nosso_numero,
+                            numero_documento=b.numero_documento,
+                            pessoa_id=pessoa,
+                            valor=b.valor,
+                            valor_pago=b.valor_pago,
+                            vencimento=b.vencimento,
+                            sinalizar_pago=b.sinalizar_pago,
+                            trash=b.trash
+                    )
+        print 'Boletos: ',convenio.convenio,new_boleto
+    
+    control_migration.update_record(boleto=True)
+
+
+##ATIVIDADE BOLETOS
+if not control_migration.atividade_boletos:
+#    db.atividade_boletos.truncate()
+    
+    for b in legacy_db(ldb.Atividade_detalhe_pagamento_nossos_numeros).select():
+        atividade_pagamento = db(db.atividade_pagamento.original_id==b.detalhe_pagamento_id).select().first()
+        atividade = atividade_pagamento.atividade_id
+        boleto = db(db.boleto.original_id==b.numero_sequencial_id).select().first()
+        
+        if boleto and atividade:
+            new_atividade_boleto = db.atividade_boletos.insert(
+                                original_id=b.id,
+                                atividade_id=atividade.id,
+                                boleto_id=boleto.id
+                        )
+            print 'Atividade Boletos: ',atividade.nome,new_atividade_boleto
+        else:
+            print 'Error: Atividade Boletos',b.id
+            
+            
+    control_migration.update_record(atividade_boletos=True)
+    
+
+##ATIVIDADE Groups
+if not control_migration.atividade_groups:
+    #db.atividade_groups()
+    
+    for g in legacy_db(ldb.Atividade_atividade_groups).select():
+        atividade = db(db.atividade.original_id==g.atividade_id).select().first()
+        group = db(db.auth_group.original_id==g.grupousergroup_id).select().first()
+        
+        if group and atividade:
+            new_atividade_groups = db.atividade_groups.insert(
+                                original_id=g.id,
+                                atividade_id=atividade.id,
+                                group_id=group.id
+                        )
+            print 'Atividade Group: ',atividade.nome,new_atividade_groups
+        else:
+            print 'Error: Atividade Group',g.id
+            
+            
+    control_migration.update_record(atividade_groups=True)
+
+
+##Organização
+if not control_migration.atividade_organizador:
+    #db.atividade_groups()
+    
+    for g in legacy_db(ldb.Organizacao_organizacao.content_type_id==41).select():
+        atividade = db(db.atividade.original_id==g.object_id).select().first()
+        
+        if atividade:
+            for p in legacy_db(ldb.Organizacao_lotacao.organizacao_id==g.id).select():
+                
+                pessoa = db(db.pessoa.original_id==p.pessoa_id).select().first()
+                if pessoa:
+                    new_atividade_organizador = db.atividade_organizador.insert(
+                                        original_id=g.id,
+                                        atividade_id=atividade.id,
+                                        pessoa_id=p.pessoa_id
+                                )
+                    print 'Atividade Organizador: ',atividade.nome,new_atividade_organizador
+                else:
+                    print 'ERRO! Atividade Organizador',g
+        else:
+            print 'ERRO! Atividade Organizador',g
+            
+    control_migration.update_record(atividade_organizador=True)
+
+
+

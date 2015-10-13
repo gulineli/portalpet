@@ -1,0 +1,13 @@
+/** these MUST stay **/
+
+.rotate{
+    -webkit-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+     transform: rotate(-90deg);
+}
+
+
+.table-red, .table-red td{
+    border: 1px solid #F96A75 !important;
+}
+

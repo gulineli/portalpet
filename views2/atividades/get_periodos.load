@@ -1,0 +1,48 @@
+<div class="form-group" id="atividade_tipo__row">
+    <label id="atividade_periodo__label" class="col-lg-3 control-label" for="atividade_periodo">Periodos: </label>
+
+    <div class="col-lg-6">
+      <table class="table table-striped table-bordered" id="id_periodos_table">
+       <thead><tr>
+          <th>Início</th><th>Término</th>
+          <td><a class="btn btn-primary btn-minier" id="novo_periodo" onclick="novo_periodo();" title="clique para adicionar novo período" rel="tooltip">
+                <i class="icon-plus icon-white"></i></a>
+          </td></tr>
+       </thead>
+       <tbody>
+       {{for p in periodos:}}
+          {{=TR(TD(DIV(INPUT(_type='text',_class="form-control periodo_dispache input-sm",_value=date2str(p.inicio)),
+                        SPAN(SPAN(_class="icon-calendar"),
+                             _class="input-group-addon"),
+                        _class="input-group date datetime",id="i_%s" %p.id) ),
+                TD(DIV(INPUT(_type='text',_class="form-control periodo_dispache input-sm",_value=date2str(p.termino)),
+                        SPAN(SPAN(_class="icon-calendar"),
+                             _class="input-group-addon"),
+                        _class="input-group date datetime")),
+                    
+                TD(A(I(_class="icon-trash"),_class="btn btn-minier",_id="novo_periodo",
+                     _onclick="exclude_periodo(this);",_title="clique para excluir este período",
+                     _rel="tooltip")
+                ),
+                **{'_data-id':p.id} )}}
+          {{pass}}
+        </tbody>
+      </table>
+      <span class="help-block">
+        Informe os momentos que esta atividade irá acontecer. Para eventos basta o inicio e término do evento, ja para atividades especifique os periodos de forma correta para que o portal possa filtrar corretamente as atividades disponiveis para o usuário    
+      
+      </span>
+    </div>
+    <input type="hidden" id="id-url" value="{{=URL('atividades','periodo',args=(atividade.slug,),extension='json')}}" />
+</div>
+
+<div class="form-group" id="atividade_tipo__row">
+    {{form = SQLFORM.factory(Field('subatividades','reference atividade',widget=m.widget,requires=IS_IN_DB(db,'atividade.id',db.atividade._format) )) }}
+
+    <label id="atividade_subatividades__label" class="col-lg-3 control-label" for="atividade_subatividades">Subatividades: </label>
+
+    <div class="col-lg-6">
+    {{=form.custom.widget.subatividades}}
+    </div>
+</div>
+

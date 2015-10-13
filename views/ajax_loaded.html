@@ -1,0 +1,38 @@
+<title>{{=response.title or request.application}}</title>
+
+{{block header}}
+<div cass="page-header">
+    <h1>
+        {{=response.title or request.application}}
+        <small>
+            <i class="ace-icon fa fa-double-angle-right"></i>
+            {{=response.subtitle or ''}}
+        </small>
+    </h1>
+</div>
+{{end}}
+
+<div class="row">
+    <div class="col-xs-12">
+      <!-- PAGE CONTENT BEGINS -->
+		{{if response.paginate:}}
+		    <div class="row">
+                <div class="col-xs-12">
+	                <div class="pull-right">
+                    {{=response.paginate}}
+                    </div>
+                </div>    
+            </div>
+            <div class="space"></div>
+        {{pass}}
+
+		{{for message in session.flash or []:
+		    =message
+		    pass
+	    }}
+
+        {{ include }}
+
+		<!-- PAGE CONTENT ENDS -->
+	</div><!-- /.col -->
+</div><!-- /.row -->

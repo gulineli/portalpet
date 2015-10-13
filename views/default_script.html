@@ -1,0 +1,221 @@
+<!-- basic scripts -->
+
+  <!--[if !IE]> -->
+  <script type="text/javascript">
+      window.jQuery || document.write("<script src='{{=URL('static','assets/js/jquery.js')}}'>"+"<"+"/script>");
+  </script>
+
+  <!-- <![endif]-->
+
+  <!--[if IE]>
+    <script type="text/javascript">
+     window.jQuery || document.write("<script src='{{=URL('static','assets/js/jquery1x.js')}}'>"+"<"+"/script>");
+    </script>
+    <![endif]-->
+  <script type="text/javascript">
+      if('ontouchstart' in document.documentElement) document.write("<script src='{{=URL('static','assets/js/jquery.mobile.custom.js')}}'>"+"<"+"/script>");
+  </script>
+  <script src="{{=URL('static','assets/js/bootstrap.js')}}"></script>
+
+  <!-- page specific plugin scripts -->
+
+  <!--[if lte IE 8]>
+    <script src="{{=URL('static','assets/js/excanvas.js')}}"></script>
+  <![endif]-->
+
+{{
+for static in js_s:
+    =XML("%s\n" %static.xml())
+    pass
+}}
+
+<script type="text/javascript">
+    String.prototype.urlParams=function(e,t){var n;var r="";var i=$("<a />").attr("href",this)[0];var s,o=/\+/g,u=/([^&=]+)=?([^&]*)/g,a=function(e){return decodeURIComponent(e.replace(o," "))},f=i.search.substring(1);n={};while(s=u.exec(f))n[a(s[1])]=a(s[2]);if(!e&&!t){return n}else if(e&&!t){return n[e]}else{n[e]=t;var l=[];for(var c in n){l.push(encodeURIComponent(c)+"="+encodeURIComponent(n[c]))}if(l.length>0){r="?"+l.join("&")}return i.origin+i.pathname+r}}
+    function showErrorAlert (reason, detail) {
+        var msg='';
+        if (reason==='unsupported-file-type') { msg = "Unsupported format " +detail; }
+        else {
+	                //console.log("error uploading file", reason, detail);
+        }
+        $('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>'+
+         '<strong>File upload error</strong> '+msg+' </div>').prependTo('#alerts');
+    };
+
+    jQuery(function($) {
+    
+        $.fn.uniformHeight = function() {
+            var maxHeight   = 0,
+                max         = Math.max;
+
+            return this.each(function() {
+                maxHeight = max(maxHeight, $(this).height());
+            }).height(maxHeight);
+        }
+        $(".thumbnail").uniformHeight();
+
+
+        $('.date-picker').datepicker({autoclose:true}).next().on(ace.click_event, function(){
+			$(this).prev().focus();
+		});
+
+	    //Load content via ajax
+		//  ace.enable_ajax_content(jQuery, {
+        //      content_url: function(url) { return url; },
+        //      default_url: '{{=URL("default","home")}}' //default url,
+        //    });
+        
+        $('body').on('mouseover',function(){
+		    $('.sparkline').each(function(){
+			    var $box = $(this).closest('.infobox');
+			    var barColor = !$box.hasClass('infobox-dark') ? $box.css('color') : '#FFF';
+			    $(this).sparkline('html', {tagValuesAttribute:'data-values', type: 'bar', barColor: barColor , chartRangeMin:$(this).data('min') || 0} );
+		    });
+
+		    $('.easy-pie-chart.percentage').each(function(){
+			    var $box = $(this).closest('.infobox');
+			    var barColor = $(this).data('color') || (!$box.hasClass('infobox-dark') ? $box.css('color') : 'rgba(255,255,255,0.95)');
+			    var trackColor = barColor == 'rgba(255,255,255,0.95)' ? 'rgba(255,255,255,0.25)' : '#E2E2E2';
+			    var size = parseInt($(this).data('size')) || 50;
+			    $(this).easyPieChart({
+				    barColor: barColor,
+				    trackColor: trackColor,
+				    scaleColor: false,
+				    lineCap: 'butt',
+				    lineWidth: parseInt(size/10),
+				    animate: /msie\s*(8|7|6)/.test(navigator.userAgent.toLowerCase()) ? false : 1000,
+				    size: size
+			    });
+		    })
+
+            $('.datetime').datetimepicker({
+                useSeconds: false,
+                sideBySide: true,
+                language:'pt-BR',
+                icons:{
+                    time: 'ace-icon fa fa-time',
+                    date: 'ace-icon fa fa-calendar',
+                    up:   'ace-icon fa fa-chevron-up',
+                    down: 'ace-icon fa fa-chevron-down'
+                }
+
+            });
+
+		})
+
+		$('#recent-box [data-rel="tooltip"]').tooltip({placement: tooltip_placement});
+		function tooltip_placement(context, source) {
+			var $source = $(source);
+			var $parent = $source.closest('.tab-content')
+			var off1 = $parent.offset();
+			var w1 = $parent.width();
+
+			var off2 = $source.offset();
+			var w2 = $source.width();
+
+			if( parseInt(off2.left) < parseInt(off1.left) + parseInt(w1 / 2) ) return 'right';
+			return 'left';
+		}
+		
+		$('[data-rel=tooltip]').tooltip();
+
+		$(document).on("click",'.foreignkey',function(e){
+            e.colorbox({width:"70%", height:"90%", iframe:true});
+        });
+
+
+		$('.dialogs,.comments').slimScroll({
+			height: '300px'
+	    });
+        
+        $('.nestable').nestable();
+
+        $('.nestable').on('mousedown','.action-buttons a', function(e){
+            e.stopPropagation();
+        });
+
+        $(':input[data-typeahead-url]').each(function(){
+            var $this = $(this);
+            var remote = $this.attr('data-typeahead-url')
+            remote = remote.urlParams('q','QUERY')
+
+            var engine = new Bloodhound({
+                datumTokenizer: Bloodhound.tokenizers.obj.whitespace('label'),
+                queryTokenizer: Bloodhound.tokenizers.whitespace,
+                remote: {'url': remote,'wildcard': 'QUERY'},
+                prefetch:$this.attr('data-typeahead-url'),
+                limit: 20
+            });
+            engine.clearPrefetchCache()
+            engine.initialize();
+
+            $this.typeahead({
+                highlight: true
+            },
+            {
+                displayKey: 'label',
+                source: engine.ttAdapter(),
+            }).bind("typeahead:selected", function(obj, datum, name) {
+                if ($this.attr('data-typeahead-set-url')){
+                    $this.val('');
+                    $.ajax({
+                        type: "POST",
+                        url: $this.attr('data-typeahead-set-url'),
+                        data: { value: datum.value, pseudo_value: datum.pseudo_value }
+                    }).done(function(msg) {
+                        eval(msg);
+
+                    }).fail(function() {
+                          alert( "error" );
+                    });
+                }else{
+                    eval($this.attr('data-typeahead-return'));
+                }
+            });
+        });
+
+        $('.wysiwyg-editor').ace_wysiwyg({
+            toolbar:
+            [
+                'font',
+                null,
+                'fontSize',
+                null,
+                {name:'bold', className:'btn-info'},
+                {name:'italic', className:'btn-info'},
+                {name:'strikethrough', className:'btn-info'},
+                {name:'underline', className:'btn-info'},
+                null,
+                {name:'insertunorderedlist', className:'btn-success'},
+                {name:'insertorderedlist', className:'btn-success'},
+                {name:'outdent', className:'btn-purple'},
+                {name:'indent', className:'btn-purple'},
+                null,
+                {name:'justifyleft', className:'btn-primary'},
+                {name:'justifycenter', className:'btn-primary'},
+                {name:'justifyright', className:'btn-primary'},
+                {name:'justifyfull', className:'btn-inverse'},
+                null,
+                {name:'createLink', className:'btn-pink'},
+                {name:'unlink', className:'btn-pink'},
+                null,
+                {name:'insertImage', className:'btn-success'},
+                null,
+                'foreColor',
+                null,
+                {name:'undo', className:'btn-grey'},
+                {name:'redo', className:'btn-grey'}
+            ],
+            'wysiwyg': {
+                fileUploadError: showErrorAlert
+            }
+        }).prev().addClass('wysiwyg-style2');
+
+        $('body').on('mouseover',function(){
+            $('.sparkline').each(function(){
+                var $box = $(this).closest('.infobox');
+                var barColor = !$box.hasClass('infobox-dark') ? $box.css('color') : '#FFF';
+                $(this).sparkline('html', {tagValuesAttribute:'data-values', type: 'bar', barColor: barColor , chartRangeMin:$(this).data('min') || 0} );
+            });
+        });
+    });
+</script>

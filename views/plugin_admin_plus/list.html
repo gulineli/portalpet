@@ -1,0 +1,159 @@
+{{extend 'plugin_admin_plus/layout.html'}}
+
+
+{{block top_head}}
+<header class="head">
+
+    <div class="search-bar">
+        <a data-original-title="Show/Hide Menu" data-placement="bottom" data-tooltip="tooltip" class="accordion-toggle btn btn-primary btn-sm visible-xs" data-toggle="collapse" href="#menu" id="menu-toggle">
+            <i class="fa fa-expand"></i>
+        </a>
+    </div>
+    <!-- ."main-bar -->
+    <div class="main-bar">
+        <h3>
+            {{tabla=singular(table)}}
+            <div class="btn-group">
+                <a data-placement="bottom" data-original-title="Show / Hide Sidebar" data-toggle="tooltip" class="btn btn-default btn-sm btn-circle" id="changeSidebarPos">
+                    <i class="fa fa-expand"></i>
+                </a>
+            </div>
+            <i class="fa fa-table"></i> {{=T('Registros en ')}} {{=tabla}}</h3>
+    </div><!-- /.main-bar -->
+</header>
+
+{{end}}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="box">
+            <header>
+                <div class="icons">
+                    {{if auth.has_permission('create', request.args(0)):}}
+                    <a data-placement="bottom" data-original-title="{{=T('Agregar')}}" href="{{=URL('new', args=request.args(0))}}" data-toggle="tooltip" class="btn btn-default btn-sm">
+                        <i class="fa fa-plus"></i>
+                    </a>
+                    {{pass}}
+                </div>
+                <h5>{{=T(request.args(0))}}  #{{=number_of_items}}</h5>
+                {{if optimizar:}}
+                <div class="search-bar">
+                    <a data-original-title="Show/Hide Menu" data-placement="bottom" data-tooltip="tooltip" class="accordion-toggle btn btn-primary btn-sm visible-xs" data-toggle="collapse" href="#menu" id="menu-toggle">
+                        <i class="fa fa-expand"></i>
+                    </a>
+                    <form class="main-search">
+                        <div class="input-group">
+                            <input type="text" name="search" class="input-small form-control" placeholder="Search ...">
+                            <span class="input-group-btn">
+                                <button class="btn btn-primary btn-sm text-muted" type="submit"><i class="fa fa-search"></i></button>
+                            </span>
+                        </div>
+                    </form>
+                </div>
+                {{pass}}
+
+
+            </header>
+            <div id="collapse4" class="body">
+                {{if auth.has_permission('delete', table):}}
+                <button class="btn  btn-line btn-metis-5" data-toggle="modal" data-target="#myModal" style="margin-bottom: 5px;">
+                    <i class="fa fa-paste"></i> {{=T('csv/excel')}}
+                </button>
+                <!-- Modal -->
+                <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title" id="myModalLabel">{{=T('Exportar o importar archivos csv ')}}</h4>
+                            </div>
+
+                            {{=CENTER(formcsv)}}
+                            <div class="modal-footer">
+                                <form accept-charset="UTF-8" action="" class="edit_user" method="post">
+                                    <input type="hidden" name="_formname" value="delete_confirmation" /><div class='group navform wat-cf'>
+
+                                        <a href="{{=URL('csv',args=request.args[0])}}" class="fa fa-paste btn btn-line btn-metis-5"> {{=T("export as csv file")}}</a>
+
+                                    </div>
+                                </form>
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div><!-- /.modal -->
+                {{pass}}
+                <div style="overflow: auto;" width="80%">
+                    <table id="dataTable" class="table table-bordered table-condensed table-hover table-striped">
+                        <thead>
+                            <tr>
+                                {{for field in fields:}}
+                                <th> {{=field}} </th>
+                                {{pass}}
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{for row in data:}}
+                            {{id=row['id']}}
+                            {{for field in fields:}}
+                            {{limitar=row[field]}}
+                            {{if len(str(limitar)) > 30:}}
+                        <td> {{=limitar[:30]}}...</td>
+                        {{else:}}
+                        <td> {{=limitar}}</td>
+                        {{pass}}
+
+                        {{pass}}
+
+                        <td class='last'>
+                            <a href="{{=URL('show', args=(request.args(0), row['id']))}}"><img alt="Show" src="{{=URL('static','plugin_admin_plus/img/show.png')}}" title="{{=T('ver')}}" /></a>
+                            {{if auth.has_permission('update', db[request.args(0)]):}}
+                            <a href="{{=URL('edit', args=(request.args(0), row['id']))}}"><img alt="Edit" src="{{=URL('static','plugin_admin_plus/img/edit.png')}}" title="{{=T('Editar')}}" /></a>
+                            {{pass}}
+                            {{if auth.has_permission('delete', db[request.args(0)]):}}
+                            <a href="{{=URL('delete', args=(request.args(0), row['id']))}}"><img alt="Delete" src="{{=URL('static','plugin_admin_plus/img/cross.png')}}" title="{{=T('Eliminar')}}" /></a>
+                            {{pass}}
+                        </td>
+                        </tr>
+                        {{pass}}
+                        </tbody>
+                    </table>
+                </div>
+                {{if optimizar:}}
+                <div class="pagination">
+                    {{pagina = request.vars.page or 1}}
+                    {{if len(pages) > 1:}}
+                    <li><a href="{{=URL('list/{}'.format(table), vars={'page':int(pagina)-1})}}">&laquo;</a></li>
+                    {{for page in pages:}}
+                    {{vars = request.vars.copy()
+                    vars['page'] = page
+                    url = URL(args=request.args, vars=vars)
+                    }}
+
+                    {{if page is None:}}
+                    <li> <span>...</span> </li>
+                    {{elif page == current_page:}}
+                    <li><span class="current">{{=page}}</span></li>
+                    {{else:}}
+                    <li><a href="{{=url}}">{{=page}}</a></li>
+                    {{pass}}
+                    {{pass}}
+                    <li><a href="{{=URL('list/{}'.format(table), vars={'page':int(pagina)+1})}}">&raquo;</a></li>
+                    {{pass}}
+                </div> <!-- End of pagination -->
+                {{pass}}
+            </div>
+        </div>
+    </div>
+</div><!-- /.row -->
+
+{{block additional-js}}
+{{super}}
+<script>
+    {{if not optimizar:}}
+    metisTable();
+    {{pass}}
+    metisSortable();
+</script>
+{{pass}}
+
