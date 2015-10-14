@@ -1,6 +1,7 @@
 {{extend 'grupos/grupo_base.html' }}
+{{n_reunioes = len(reunioes)}}
   <div class="alert alert-info">
-    <i class="icon-circle-info"></i> <strong>{{# total_find #}} Reuni{{#hits|pluralize:"ão,ões"#}}</strong> encontrada{{#hits|pluralize#}}
+    <i class="icon-circle-info"></i> <strong>{{=T("%s %%{Reunião} %%{encontrada}", n_reunioes)}}</strong>
     {{# if form.has_changed #}}na pesquisa {{# pass #}}
   </div>
   <div class="btn-toolbar">
@@ -23,37 +24,30 @@
   </div>
 {{# endblock #}}
 
+<div class="space"></div>
 
-
-<div class="table-header">
-	Reuniões encontradas
-</div>
 
 <div class="table-responsive">
 	<table id="sample-table-2" class="table table-striped table-bordered table-hover">
 		<thead>
 			<tr>
-				<th class="center">
-					<label>
-						<input type="checkbox" class="ace" />
-						<span class="lbl"></span>
-					</label>
-				</th>
-				<th>Pauta</th>
-				<th>
-				    Data
-			    </th>
-				<th>In&iacute;cio</th>
-				<th class="hidden-480">Dura&ccedil;&atilde;o</th>
-                <th width="100">Situa&ccedil;&atilde;o</th>
 				<th></th>
+				<th>Pauta</th>
+				<th>Data</th>
+				<th>In&iacute;cio</th>
+				<th>Dura&ccedil;&atilde;o</th>
+                <th width="100">Situa&ccedil;&atilde;o</th>
 			</tr>
 		</thead>
 
 		<tbody>
           {{ for r in reunioes: }}
             <tr {{ if not r.termino: }}class="alert"{{ pass }}>
-              <td width="15"></td>
+              <td width="15">
+                <a href="{{=URL('grupos','reunioes',args=(grupo.slug, r.hash, 'delete'))}}" class="red">
+                  <i class="fa fa-trash"></i>
+                </a>
+              </td>
               <td style="text-align:left;">
                 <a href="{{=URL('grupos','reuniao',args=(grupo.slug,r.hash))}}">
                   {{=r.pauta_id.nome}}
@@ -67,11 +61,12 @@
               <td>{{=datediff_T((r.termino or request.now) - r.inicio)}}</td>
               <td>
                 {{ if r.termino and r.arquivo_id: }}
-                    <a href={{=URL('default','download',args=(r.arquivo_id.arquivo,)) }}>download</a>{{ else: }}Em aberto{{ pass }}</td>
-              <td>
-                <a href="{{=URL('grupos','reunioes',args=(grupo.slug,r.hash,'delete'))}}" class="red">
-                  <i class="icon-trash bigger-130"></i>
-                </a>
+                    <a href={{=URL('default','download',args=(r.arquivo_id.arquivo,)) }}>
+                        download
+                    </a>
+                {{ else: }}
+                    Em aberto
+                {{ pass }}
               </td>
             </tr>
           {{ pass }}

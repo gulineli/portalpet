@@ -411,7 +411,7 @@ db.define_table('grupo',
     Field('pessoa_id', 'reference pessoa',
           requires=IS_EMPTY_OR(IS_IN_DB(db, 'pessoa.id')),unique=True, **RWF),
     Field('twitter', 'string'),
-    Field.Method('get_related', lambda row,table:\
+    Field.Method('get_related', lambda row, table:\
             db(db[table]['grupo_id']==row.grupo.id) ),
 
     format = lambda row: db_utils.grupo_format(db, row),

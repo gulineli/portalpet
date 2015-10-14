@@ -308,10 +308,10 @@ def generic_search():
     max_rows = int(request.vars.get('max_rows','15')) if search_key else 20.
 
     if search_key:
+        cidades_id = db(db.cidade.nome.contains(search_key)).select(db.cidade.id).column()
         query = (
             (db.grupo.nome.contains(search_key)) |
-            ((db.grupo.cidade_id == db.cidade.id) &
-             (db.cidade.nome.contains(search_key)))
+            (db.grupo.cidade_id.belongs(cidades_id))
         )
     else:
         query = (db.grupo.id > 0)
@@ -324,7 +324,7 @@ def generic_search():
 
     results = [
         {'label': db.grupo._format(grupo),
-         'value': URL('grupos','grupo',args=(grupo.slug,))
+         'value': URL('grupos', 'grupo', args=(grupo.slug,), extension="html")
         } for grupo in grupos
     ]
 
