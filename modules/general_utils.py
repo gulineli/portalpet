@@ -47,3 +47,10 @@ def mail_process(mail,acao,acao_grupo):
         acao.update_record(error=True)
         acao_grupo.update_record(comentario=u'Falha ao enviar email para %s' %mail.mail_to)
 
+
+def truncate_words(text, n_words):
+    try:
+        splits = text.split(' ')
+        return ' '.join(splits[:n_words]) + ('' if len(splits)<=n_words else ' ...')
+    except:
+        return text

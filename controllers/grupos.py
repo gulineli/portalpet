@@ -174,46 +174,15 @@ def nova_reuniao():
 
 
 @breadcrumb()
-def reuniao():
-    from gluon.contrib import simplejson
-    from myutils import regroup
-    grupo = grupo_record or redirect(URL('index'))
-    reuniao = db(db.reuniao.hash==request.args(1)).select().first() or redirect(URL('grupos','reunioes',args=(grupo.slug,)))
-    response.title = db.reuniao._format(reuniao)
-
-#    if reuniao.termino:
-#        from reuniao_utils import reuniao_create_arquivo
-#        pdf = reuniao_create_arquivo(db,request,response,reuniao)
-#        response.headers['Content-Type']='application/pdf'
-#        response.headers['Content-Disposition'] = \
-#                'filename=%s_%s.pdf' %(reuniao.number(),reuniao.inicio.year)
-#        return pdf
-
-#    if reuniao.termino:
-#        return redirect(URL('grupos','reunioes', args=(grupo.slug,reuniao.hash)) )
-
-    participantes = reuniao.participantes_set().select()
-
-    ##Configurando as pautas que devem aparecer
-    pautas_list = request.get_vars.get('pautas',[reuniao.pauta_id])
-    initial = simplejson.dumps({'pautas':pautas_list})
-
-    #Tópicos pendentes
-    topicos_em_pauta = reuniao.topicos_set()._select(db.topico.id)
-    topicos_pendentes = db((db.topico.grupo_id==grupo.id) & (db.topico.encerrado==False) &
-                           (db.topico_pautas.topico_id==db.topico.id) & (db.pauta.id.belongs(list(pautas_list))) &
-                           ~(db.topico.id.belongs(topicos_em_pauta))).select(db.topico.ALL,groupby=db.topico.id)
-    return locals()
-
-
-@breadcrumb()
 def topico():
     from pessoa_utils import get_pessoa
-    pessoa = get_pessoa(request,db,auth,force_auth=True).pessoa
-    grupo = grupo_record or redirect(URL('index'))
-    reuniao = db(db.reuniao.hash==request.args(1)).select().first() or redirect(URL('grupos','reunioes',args=(grupo.slug,)))
-    topico = db(db.topico.id==request.args(2)).select().first()
-
+    pessoa = get_pessoa(request, db,auth, force_auth=True).pessoa
+    reuniao = db(db.reuniao.hash==request.args(0)).select().first() or redirect(URL('default','index',args=(grupo.slug,)))
+    
+    grupo = reuniao.grupo_id
+    
+    topico = db(db.topico.hash==request.args(1)).select().first()
+    
     edicao = request.get_vars.get('edicao',False)
     reuniao_link = URL('grupos','reuniao',args=(grupo.slug,reuniao.hash),vars=request.get_vars)
 
@@ -302,6 +271,41 @@ def encerra_reuniao():
     diff = termino - reuniao.inicio
     total_seconds = diff.seconds + diff.days * 24 * 3600
     alert_finished = True if total_seconds > 2*60*60 or total_seconds < 5*60 else False
+    return locals()
+
+
+@breadcrumb()
+def reuniao():
+    from gluon.contrib import simplejson
+    from myutils import regroup
+#    grupo = grupo_record or redirect(URL('index'))
+    reuniao = db(db.reuniao.hash==request.args(0)).select().first() or redirect(URL('default','index'))
+    grupo = reuniao.grupo_id
+    
+    response.title = db.reuniao._format(reuniao)
+
+#    if reuniao.termino:
+#        from reuniao_utils import reuniao_create_arquivo
+#        pdf = reuniao_create_arquivo(db,request,response,reuniao)
+#        response.headers['Content-Type']='application/pdf'
+#        response.headers['Content-Disposition'] = \
+#                'filename=%s_%s.pdf' %(reuniao.number(),reuniao.inicio.year)
+#        return pdf
+
+#    if reuniao.termino:
+#        return redirect(URL('grupos','reunioes', args=(grupo.slug,reuniao.hash)) )
+
+    participantes = reuniao.participantes_set().select()
+
+    ##Configurando as pautas que devem aparecer
+    pautas_list = request.get_vars.get('pautas',[reuniao.pauta_id])
+    initial = simplejson.dumps({'pautas':pautas_list})
+
+    #Tópicos pendentes
+    topicos_em_pauta = reuniao.topicos_set()._select(db.topico.id)
+    topicos_pendentes = db((db.topico.grupo_id==grupo.id) & (db.topico.encerrado==False) &
+                           (db.topico_pautas.topico_id==db.topico.id) & (db.pauta.id.belongs(list(pautas_list))) &
+                           ~(db.topico.id.belongs(topicos_em_pauta))).select(db.topico.ALL,groupby=db.topico.id)
     return locals()
 
 

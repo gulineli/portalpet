@@ -22,7 +22,8 @@ def home():
 
 
 def pessoa():
-    if not get_pessoa(request,db,auth):
+    print get_pessoa(request, db, auth), auth.is_logged_in(), 888898282988
+    if not get_pessoa(request, db, auth):
         redirect(URL('index') )
 
     from myutils import render_fields,copydata
@@ -37,7 +38,7 @@ def pessoa():
         response.title = 'Editar Pessoa'
         response.view = "default/pessoa_edit.html"
 
-        pessoa = get_pessoa(request,db,auth,render=False)
+        pessoa = get_pessoa(request, db, auth, render=False)
 
 
         if request.env.request_method=="POST":
@@ -109,8 +110,9 @@ def inbox():
     orderby = getattr(db.mensagem,request.vars.get('o','hora') )
     if orderby == db.mensagem.hora:
         orderby = ~orderby
-
-    paginate = Paginate(request,response,s,select_args=[db.mensagem.ALL],select_kwargs={'orderby':orderby})
+    paginate = Paginate(request, s,
+                        select_args=[db.mensagem.ALL],
+                        select_kwargs={'orderby':orderby})
     mensagens = paginate.rows
 
     return locals()
@@ -383,15 +385,15 @@ def user():
         response.view = "default/login2.html"
         db.auth_user.username.label = T("Username or Email")
         auth.settings.login_userfield = 'username'
+        
         if request.vars.username and not IS_EMAIL()(request.vars.username)[1]:
             auth.settings.login_userfield = 'email'
             request.vars.email = request.vars.username
             request.post_vars.email = request.vars.email
             request.vars.username = None
             request.post_vars.username = None
-
-        return dict(form=auth())
-
+        
+        return dict(form=auth.login())
 
     return dict(form=auth())
 

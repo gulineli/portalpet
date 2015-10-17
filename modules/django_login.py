@@ -403,12 +403,12 @@ def django_login(db):
     Autenticar com base nos dados salvos pelo django
     """
     
-    def check_password_aux(email,password):
+    def check_password_aux(email, password):
         u = db((db.auth_user.email==email) | (db.auth_user.username_==email)).select().first()
-        
         if u and not u.django_password:
-            return db.auth_user.password.validate(password) == (u.password,None)
-        return check_password(password, u.django_password) if u else None
-
+            return db.auth_user.password.validate(password) == (u.password, None)
+        
+        return check_password(password, u.django_password)# if u else None
+    
     return check_password_aux
     

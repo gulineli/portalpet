@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # IN PRODUCTION MODE:
-#from gluon.custom_import import track_changes; track_changes(True)
+from gluon.custom_import import track_changes; track_changes(True)
 
 
 # Public modules
@@ -11,18 +11,18 @@ import uuid
 
 # web2py modules
 from gluon.tools import Auth, Crud, Service, PluginManager, prettydate
-
+from gluon import current
 
 # Personal Modules
 import db_utils
 import server
 from images import THUMB
-from myutils import cooldate, date2str, datediff_T, truncate_words
+from myutils import cooldate, date2str, datediff_T
 from widgets import Autocomplete, bootstrap3, bootstrap_editor, datepicker, Fileinput
 from custon_widgets import MultipleOptionsWidgetFK, SingleOptionsWidgetFK
 from custon_helper import BREADCRUMB
 from html_utils import Paginate
-
+from general_utils import truncate_words
 
 items_per_page = 20
 from django_login import django_login
@@ -32,7 +32,7 @@ RWF = dict(readable=False, writable=False)
 
 
 db = DAL(server.SIGNATURE,
-         migrate=server.MIGRATE,
+         migrate=False, #server.MIGRATE,
          # fake_migrate=True,
          check_reserved=['postgres', 'mysql'],
          lazy_tables=True
@@ -62,7 +62,7 @@ auth.settings.extra_fields['auth_user']= [
 auth.settings.extra_fields['auth_group'] = [Field('full_description')]
 
 # Define as tabelas do auth
-auth.define_tables(username=False, signature=False)
+auth.define_tables(username=True, signature=False)
 
 # Remove as verificações do campo de email para permitir que o usuário possa
 # se logar utilizando o usuário ou email
@@ -83,10 +83,12 @@ auth.settings.registration_requires_approval = False
 auth.settings.reset_password_requires_verification = True
 
 
-auth.settings.login_next = auth.settings.profile_next = URL('default', 'pessoa')
+auth.settings.login_next = URL('default', 'pessoa')
+#auth.settings.profile_next = URL('default', 'pessoa')
 auth.settings.expiration = 3600*2
 #auth.settings.login_onfail = URL('ggg')
 
+current.auth = auth
 
 db._common_fields.append( Field('original_id', 'integer'))
 
@@ -193,7 +195,7 @@ db.define_table('mensagem',
     Field('hash', 'string', length=64,
           readable=False, writable=False,
           default=lambda:str(uuid.uuid4())),
-    Field.Method('is_read', lambda row: mensagem_is_read(db, row)),
+    Field.Lazy('is_read', lambda row: db_utils.mensagem_is_read(db, row)),
     Field.Method('render_resposta',
                  lambda row, can_del: mensagem_render_resposta(db, row, can_del)),
 

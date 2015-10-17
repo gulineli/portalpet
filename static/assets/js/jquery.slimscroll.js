@@ -2,7 +2,7 @@
  * Dual licensed under the MIT (http://www.opensource.org/licenses/mit-license.php)
  * and GPL (http://www.opensource.org/licenses/gpl-license.php) licenses.
  *
- * Version: 1.3.3
+ * Version: 1.3.6
  *
  */
 (function($) {
@@ -100,8 +100,8 @@
             var offset = me.scrollTop();
 
             // find bar and rail
-            bar = me.parent().find('.' + o.barClass);
-            rail = me.parent().find('.' + o.railClass);
+            bar = me.closest('.' + o.barClass);
+            rail = me.closest('.' + o.railClass);
 
             getBarHeight();
 
@@ -309,7 +309,7 @@
         }
 
         // attach scroll events
-        attachWheel();
+        attachWheel(this);
 
         function _onWheel(e)
         {
@@ -382,12 +382,12 @@
           hideBar();
         }
 
-        function attachWheel()
+        function attachWheel(target)
         {
           if (window.addEventListener)
           {
-            this.addEventListener('DOMMouseScroll', _onWheel, false );
-            this.addEventListener('mousewheel', _onWheel, false );
+            target.addEventListener('DOMMouseScroll', _onWheel, false );
+            target.addEventListener('mousewheel', _onWheel, false );
           }
           else
           {

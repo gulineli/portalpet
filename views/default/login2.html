@@ -70,43 +70,41 @@
                                             {{pass}}
 
 											<div class="space-6"></div>
-											    <form enctype="multipart/form-data" action="" method="post">
-											        {{
-											        form.custom.widget.username['_class'] = 'form-control'
-											        form.custom.widget.password['_class'] = 'form-control'
-											        form.custom.widget.username['_placeholder'] = 'email'
-											        form.custom.widget.password['_placeholder'] = 'password'
-											        }}
-											        {{=form.custom.begin}}
-											        <fieldset>
-													    <label class="block clearfix">
-														    <span class="block input-icon input-icon-right">
-											                    {{=form.custom.widget.username}}
-											                    <i class="icon-user"></i>
-										                    </span>
-													    </label>
-													    <label class="block clearfix">
-														    <span class="block input-icon input-icon-right">
-											                    {{=form.custom.widget.password}}
-											                    <i class="icon-lock"></i>
-										                    </span>
-													    </label>
-													    <div class="space"></div>
+										        {{
+										        form.custom.widget.username['_class'] = 'form-control'
+										        form.custom.widget.password['_class'] = 'form-control'
+										        form.custom.widget.username['_placeholder'] = 'email'
+										        form.custom.widget.password['_placeholder'] = 'password'
+										        }}
+										        {{=form.custom.begin}}
+										        <fieldset>
+												    <label class="block clearfix">
+													    <span class="block input-icon input-icon-right">
+										                    {{=form.custom.widget.username}}
+										                    <i class="icon-user"></i>
+									                    </span>
+												    </label>
+												    <label class="block clearfix">
+													    <span class="block input-icon input-icon-right">
+										                    {{=form.custom.widget.password}}
+										                    <i class="icon-lock"></i>
+									                    </span>
+												    </label>
+												    <div class="space"></div>
 
-													    <div class="clearfix">
-														    <label class="inline">
-															    <input type="checkbox" class="ace" id="auth_user_remember" name="remember"/>
-															    <span class="lbl"> Lembrar-me</span>
-														    </label>
+												    <div class="clearfix">
+													    <label class="inline">
+														    <input type="checkbox" class="ace" id="auth_user_remember" name="remember"/>
+														    <span class="lbl"> Lembrar-me</span>
+													    </label>
 
-														    <button class="width-35 pull-right btn btn-sm btn-primary" type="submit">
-															    <i class="icon-key"></i>
-															    Entrar
-														    </button>
-													    </div>
-												    </fieldset>
-												    {{=form.custom.end}}
-											    </form>
+													    <button class="width-35 pull-right btn btn-sm btn-primary" type="submit">
+														    <i class="icon-key"></i>
+														    Entrar
+													    </button>
+												    </div>
+											    </fieldset>
+											    {{=form.custom.end}}
 <!--											<form>-->
 <!--												<fieldset>-->
 <!--													<label class="block clearfix">-->
@@ -231,59 +229,57 @@
 											<div class="space-6"></div>
 											<p> Enter your details to begin: </p>
 
-											<form>
-												<fieldset>
-													<label class="block clearfix">
-														<span class="block input-icon input-icon-right">
-															<input type="email" class="form-control" placeholder="Email" />
-															<i class="icon-envelope"></i>
-														</span>
-													</label>
+											<fieldset>
+												<label class="block clearfix">
+													<span class="block input-icon input-icon-right">
+														<input type="email" class="form-control" placeholder="Email" />
+														<i class="icon-envelope"></i>
+													</span>
+												</label>
 
-													<label class="block clearfix">
-														<span class="block input-icon input-icon-right">
-															<input type="text" class="form-control" placeholder="Username" />
-															<i class="icon-user"></i>
-														</span>
-													</label>
+												<label class="block clearfix">
+													<span class="block input-icon input-icon-right">
+														<input type="text" class="form-control" placeholder="Username" />
+														<i class="icon-user"></i>
+													</span>
+												</label>
 
-													<label class="block clearfix">
-														<span class="block input-icon input-icon-right">
-															<input type="password" class="form-control" placeholder="Password" />
-															<i class="icon-lock"></i>
-														</span>
-													</label>
+												<label class="block clearfix">
+													<span class="block input-icon input-icon-right">
+														<input type="password" class="form-control" placeholder="Password" />
+														<i class="icon-lock"></i>
+													</span>
+												</label>
 
-													<label class="block clearfix">
-														<span class="block input-icon input-icon-right">
-															<input type="password" class="form-control" placeholder="Repeat password" />
-															<i class="icon-retweet"></i>
-														</span>
-													</label>
+												<label class="block clearfix">
+													<span class="block input-icon input-icon-right">
+														<input type="password" class="form-control" placeholder="Repeat password" />
+														<i class="icon-retweet"></i>
+													</span>
+												</label>
 
-													<label class="block">
-														<input type="checkbox" class="ace" />
-														<span class="lbl">
-															I accept the
-															<a href="#">User Agreement</a>
-														</span>
-													</label>
+												<label class="block">
+													<input type="checkbox" class="ace" />
+													<span class="lbl">
+														I accept the
+														<a href="#">User Agreement</a>
+													</span>
+												</label>
 
-													<div class="space-24"></div>
+												<div class="space-24"></div>
 
-													<div class="clearfix">
-														<button type="reset" class="width-30 pull-left btn btn-sm">
-															<i class="icon-refresh"></i>
-															Reset
-														</button>
+												<div class="clearfix">
+													<button type="reset" class="width-30 pull-left btn btn-sm">
+														<i class="icon-refresh"></i>
+														Reset
+													</button>
 
-														<button type="button" class="width-65 pull-right btn btn-sm btn-success">
-															Register
-															<i class="icon-arrow-right icon-on-right"></i>
-														</button>
-													</div>
-												</fieldset>
-											</form>
+													<button type="button" class="width-65 pull-right btn btn-sm btn-success">
+														Register
+														<i class="icon-arrow-right icon-on-right"></i>
+													</button>
+												</div>
+											</fieldset>
 										</div>
 
 										<div class="toolbar center">

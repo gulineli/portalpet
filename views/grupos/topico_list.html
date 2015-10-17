@@ -34,14 +34,14 @@
             <div class="btn-toolbar">
               <div class="btn-group">
                 {{if tipo=='em_pauta':}}
-                  <a href = "{{=URL('grupos','topico',args=(grupo.slug,reuniao.hash,topico.id),vars=vars) }}" class="btn btn-xs btn-primary" rel="tooltip" title="Clique para editar">
+                  <a href = "{{=URL('grupos','topico',args=(reuniao.hash,topico.hash),vars=vars) }}" class="btn btn-xs btn-primary" rel="tooltip" title="Clique para editar">
                     <i class="icon-pencil icon-white"></i>
                   </a>
-                  <a class="btn btn-xs btn-danger" href="{{=URL('grupos','remove_topico',args=(grupo.slug,reuniao.hash,topico.id),vars=vars)}}" rel="tooltip" title="Clique para remover este tópico de pauta" >
+                  <a class="btn btn-xs btn-danger" href="{{=URL('grupos','remove_topico',args=(grupo.slug,reuniao.hash,topico.hash),vars=vars)}}" rel="tooltip" title="Clique para remover este tópico de pauta" >
                     <i class="icon-trash"></i>
                   </a>
                 {{else:}}
-                  <a  rel="tooltip" href = "{{=URL('grupos','topico',args=(grupo.slug,reuniao.hash,topico.id),vars=vars) }}" class="btn btn-primary btn-sm" title="Clique para colocar tópico em pauta">
+                  <a  rel="tooltip" href = "{{=URL('grupos','topico',args=(reuniao.hash, topico.hash),vars=vars) }}" class="btn btn-primary btn-sm" title="Clique para colocar tópico em pauta">
                     <i class="icon-conversation icon-white"></i> Discutir
                   </a>
                 {{pass}}
@@ -66,10 +66,3 @@
   {{pass}}
   
 </div>
-
-
-
-
-
-
-

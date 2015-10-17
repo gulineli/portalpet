@@ -59,53 +59,57 @@ response.files.append(URL('static','js/bootstrap-select.min.js'))
       <i class="icon-circle-exclamation-mark icon-white"></i>  Encerrar Reunião
     </a>
   </div>
-  <div class="row">
-    <div class="col-xs-12 col-sm-6 widget-container-span">
-	    <div class="widget-box">
-		    <div class="widget-header">
-			    <h5>T&oacute;picos em Pauta ( <span id="num_topicos_pauta">{{=num_topicos}}</span> )</h5>
+    <div class="widget-box">
+	    <div class="widget-header">
+		    <h5 class="widget-title">T&oacute;picos em Pauta ( <span id="num_topicos_pauta">{{=num_topicos}}</span> )</h5>
 
-			    <div class="widget-toolbar">
-				    <a href="{{=URL('grupos','topico',args=(grupo.slug,reuniao.hash),vars=vars) }}" title="Clique para adicionar um novo topico" data-toggle="tooltip">
-					    <i class="icon-plus-sign bigger-120"></i>
-				    </a>
-				    <a href="#" data-action="collapse">
-					    <i class="icon-chevron-up"></i>
-				    </a>
-			    </div>
+		    <div class="widget-toolbar">
+			    <a href="{{=URL('grupos','topico',args=(grupo.slug, reuniao.hash),vars=vars) }}" title="Clique para adicionar um novo topico" data-toggle="tooltip">
+				    <i class="ace-icon fa fa-plus-sign bigger-120"></i>
+			    </a>
+			    <a href="#" data-action="collapse">
+				    <i class="ace-icon fa fa-chevron-up"></i>
+			    </a>
 		    </div>
+	    </div>
 
-		    <div class="widget-body">
-			    <div class="widget-main">
-				    {{=render_topicos(topicos_em_pauta,tipo='em_pauta')}}
-			    </div>
+	    <div class="widget-body">
+		    <div class="widget-main">
+			    {{=render_topicos(topicos_em_pauta,tipo='em_pauta')}}
 		    </div>
 	    </div>
     </div>
-    <div class="col-xs-12 col-sm-6 widget-container-span">
-	    <div class="widget-box">
-		    <div class="widget-header">
-			    <h5>T&oacute;picos Pendentes para as pautas listadas ( <span id="num_topicos_pendentes">{{=num_topicos_pendentes}}</span> )</h5>
+    <div class="widget-box">
+	    <div class="widget-header">
+		    <h5 class="widget-title">T&oacute;picos Pendentes para as pautas listadas
+		         ( <span id="num_topicos_pendentes">{{=num_topicos_pendentes}}</span> )
+	        </h5>
 
-			    <div class="widget-toolbar">
-				    <a href="{{=URL('grupos','topico',args=(grupo.slug,reuniao.hash),vars=vars) }}" data-action="settings">
-					    <i class="icon-plus-square"></i>
-				    </a>
-				    <a href="#" data-action="collapse">
-					    <i class="icon-chevron-up"></i>
-				    </a>
-			    </div>
+		    <div class="widget-toolbar">
+			    <a href="{{=URL('grupos','topico',args=(grupo.slug,reuniao.hash),vars=vars) }}" data-action="settings">
+				    <i class="ace-icon fa fa-plus-square"></i>
+			    </a>
+			    <a href="#" data-action="collapse">
+				    <i class="ace-icon fa fa-chevron-up"></i>
+			    </a>
 		    </div>
+	    </div>
 
-		    <div class="widget-body">
-			    <div class="widget-main">
-			      <p class="alert alert-info" style="margin:10px 0 0 ;">
-              <i class="icon-circle-info"></i>  Clique em discutir para editar/colocar o tópico em pauta
-              <a class="close" data-dismiss="alert" href="#">&times;</a>
-            </p>
-			      {{=SELECT(*[OPTION(p.nome,_value=p.id,**dict(_selected='selected') if p.id in pautas_list else dict() ) for p in db((db.pauta.grupo_id==grupo.id)).select()],_class="selectpicker",_multiple='multiple',_id="id_pautas")}}
-				    {{=render_topicos(topicos_pendentes,tipo='pendente')}}   
-			    </div>
+	    <div class="widget-body">
+		    <div class="widget-main">
+		      <div class="row">
+		        <div class="col-xs-8">
+		          <p class="alert alert-info">
+                <i class="icon-circle-info"></i>  Clique em discutir para editar/colocar o tópico em pauta
+                <a class="close" data-dismiss="alert" href="#">&times;</a>
+              </p>
+		        </div>
+		        <div class="col-xs-4">
+		          {{=SELECT(*[OPTION(p.nome,_value=p.id,**dict(_selected='selected') if p.id in pautas_list else dict() ) for p in db((db.pauta.grupo_id==grupo.id)).select()],_class="selectpicker",_multiple='multiple',_id="id_pautas")}}
+		        </div>
+		      </div>
+		      <div class="space"></div>
+			    {{=render_topicos(topicos_pendentes,tipo='pendente')}}   
 		    </div>
 	    </div>
     </div>

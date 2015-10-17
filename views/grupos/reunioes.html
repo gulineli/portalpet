@@ -49,7 +49,7 @@
                 </a>
               </td>
               <td style="text-align:left;">
-                <a href="{{=URL('grupos','reuniao',args=(grupo.slug,r.hash))}}">
+                <a href="{{=URL('grupos','reuniao',args=(r.hash))}}">
                   {{=r.pauta_id.nome}}
                   {{ if not r.termino: }}
                     [editar]

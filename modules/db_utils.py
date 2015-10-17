@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # from gluon import current, A, URL
-from gluon import IS_SLUG
+from gluon import IS_SLUG, current
 
 
 INTEGRANTE_TIPO = dict(
@@ -75,6 +75,7 @@ def grupo_slug_compute(db, row):
     )[0]
 
 def mensagem_is_read(db, row):
+    auth = current.auth
     pessoa_ = db((db.pessoa_fisica.pessoa_id==db.pessoa.id) & \
                 (db.pessoa_fisica.user_id==auth.user_id)).select(db.pessoa_fisica.pessoa_id).first()
     if pessoa_:

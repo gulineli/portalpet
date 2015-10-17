@@ -71,7 +71,7 @@ class Paginate(object):
                  select_args=[], select_kwargs={}, search_url=None,
                  max_pages=5, info="%s"):
         self.s = s
-        self.items_page = itens_page-1
+        self.items_page = itens_page - 1
         self.select_args = select_args
         self.select_kwargs = select_kwargs
         self.request = request

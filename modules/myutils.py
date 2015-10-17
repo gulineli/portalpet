@@ -70,13 +70,6 @@ def render_fields(row,db,tables=[],exclude=[]):
     return render
 
 
-def truncate_words(text, n_words):
-    try:
-        splits = text.split(' ')
-        return ' '.join(splits[:n_words]) + ('' if len(splits)<=n_words else ' ...')
-    except:
-        return text
-
 
 def copydata(src, dest,db,tables=[]):
     ''' copy data for the listed from src to dest, only if they exist in the source

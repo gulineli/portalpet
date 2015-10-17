@@ -177,7 +177,7 @@ pass
 							<div class="inline position-relative">
 								<a href="#" data-toggle="dropdown" class="dropdown-toggle">
 									Ordenar &nbsp;
-									<i class="icon-caret-down bigger-125"></i>
+									<i class="fa fa-caret-down bigger-125"></i>
 								</a>
 
 								<ul class="dropdown-menu dropdown-lighter pull-right dropdown-100">
@@ -210,7 +210,7 @@ pass
 							<form class="form-search">
 								<span class="input-icon">
 									<input type="text" autocomplete="off" class="input-small nav-search-input" placeholder="Search inbox ..." />
-									<i class="icon-search nav-search-icon"></i>
+									<i class="ace-icon fa fa-search nav-search-icon"></i>
 								</span>
 							</form>
 						</div>
@@ -382,7 +382,7 @@ pass
 				<div class="message-list-container">
 					<div class="message-list" id="message-list">
 					    {{for mensagem in mensagens:}}
-						<div class="message-item{{='' if mensagem.readed() else ' message-unread'}}" data-message="{{=mensagem.hash}}">
+						<div class="message-item{{='' if mensagem.is_read() else ' message-unread'}}" data-message="{{=mensagem.hash}}">
 							<label class="inline">
 								<input type="checkbox" class="ace" />
 								<span class="lbl"></span>
@@ -390,11 +390,11 @@ pass
 
 							<i class="message-star icon-star-empty light-grey"></i>
 
-							<span class="sender" title="John Doe">
+							<span class="sender" title="{{=mensagem.de.nome}}">
 								{{=truncate_words(mensagem.de.nome,2)}}
 								<span class="light-grey">{{=num_mensagens_relacionadas(mensagem)}}</span>
 							</span>
-							<span class="time">{{=cooldate(mensagem.hora)}}</span>
+							<span class="time smaller-80">{{=cooldate(mensagem.hora)}}</span>
 
 <!--							<span class="attachment">-->
 <!--								<i class="icon-paper-clip"></i>-->
@@ -416,7 +416,7 @@ pass
 			    </div>
 
 				<div class="message-footer clearfix">
-					<div class="pull-left"> {{=T('%s %%{Mensagem}',response.num_items)}} total </div>
+					<div class="pull-left">{{=T("%s %%{Mensagem}", response.num_items)}} total </div>
 
 					<div class="pull-right">
 					    {{=paginate}}

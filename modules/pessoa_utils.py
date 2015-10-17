@@ -3,19 +3,21 @@ from gluon import URL,XML,I,current,redirect
 
 T = current.T
 
-def get_pessoa(request,db,auth,select_args=[],select_kwargs={},force_auth=False,render=False):
+def get_pessoa(request, db, auth, select_args=[], select_kwargs={},
+               force_auth=False, render=False):
     select_args = select_args # or [db.pessoa.ALL]
-    if request.args(0) and not force_auth:
+    if request.args(0):
         arg = request.args(0)
         pessoas = db(((db.pessoa.slug==arg) | (db.pessoa.id==arg if arg.isdigit() else 0)) & \
                   (db.pessoa_fisica.pessoa_id==db.pessoa.id)).select(
                     *select_args,**select_kwargs)
 
-    else:
+    else:  # if force_auth:
         pessoas = db((db.pessoa_fisica.pessoa_id==db.pessoa.id) & \
-                   (db.pessoa_fisica.user_id==auth.user_id)).select(
+                     (db.pessoa_fisica.user_id==auth.user_id)).select(
                     *select_args,**select_kwargs )
 
+    print pessoas, auth.user_id, 9999999999999999999999
     if render:
         return pessoas.render(0,fields=[db.pessoa.cidade_id,
                                         db.pessoa_fisica.sexo,

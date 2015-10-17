@@ -342,11 +342,15 @@ jQuery(function($) {
 	function smallDeviceDropdowns() {
 	  if(ace.vars['old_ie']) return;
 	  
-	  $('.ace-nav > li')
-	  .on('shown.bs.dropdown.navbar', function(e) {
+	  $(document)
+	  .on('shown.bs.dropdown.navbar', '.ace-nav > li.dropdown-modal', function(e) {
 		adjustNavbarDropdown.call(this);
+		var self = this;
+		$(window).on('resize.navbar.dropdown', function() {
+			adjustNavbarDropdown.call(self);
+		})
 	  })
-	  .on('hidden.bs.dropdown.navbar', function(e) {
+	  .on('hidden.bs.dropdown.navbar', '.ace-nav > li.dropdown-modal', function(e) {
 		$(window).off('resize.navbar.dropdown');
 		resetNavbarDropdown.call(this);
 	  })
@@ -430,13 +434,6 @@ jQuery(function($) {
 		else {
 			if($sub.length != 0) resetNavbarDropdown.call(this, $sub);
 		}
-		
-		var self = this;
-		$(window)
-		.off('resize.navbar.dropdown')
-		.one('resize.navbar.dropdown', function() {
-			$(self).triggerHandler('shown.bs.dropdown.navbar');
-		})
 	  }
 
 	  //reset scrollbars and user menu
@@ -494,7 +491,8 @@ jQuery(function($) {
 
 	return val;
  }
- $$.getAttrSettings = function(el, attr_list, prefix) {
+ $$.getAttrSettings = function(elem, attr_list, prefix) {
+	if(!elem) return;
 	var list_type = attr_list instanceof Array ? 1 : 2;
 	//attr_list can be Array or Object(key/value)
 	var prefix = prefix ? prefix.replace(/([^\-])$/ , '$1-') : '';
@@ -505,7 +503,7 @@ jQuery(function($) {
 		var name = list_type == 1 ? attr_list[li] : li;
 		var attr_val, attr_name = $$.unCamelCase(name.replace(/[^A-Za-z0-9]{1,}/g , '-')).toLowerCase()
 
-		if( ! ((attr_val = el.getAttribute(prefix + attr_name))  ) ) continue;
+		if( ! ((attr_val = elem.getAttribute(prefix + attr_name))  ) ) continue;
 		settings[name] = $$.strToVal(attr_val);
 	}
 
@@ -519,6 +517,7 @@ jQuery(function($) {
 	return window.innerHeight || document.documentElement.clientHeight;
  }
  $$.redraw = function(elem, force) {
+	if(!elem) return;
 	var saved_val = elem.style['display'];
 	elem.style.display = 'none';
 	elem.offsetHeight;

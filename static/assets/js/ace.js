@@ -1,5 +1,5 @@
 /*!
- * Ace v1.3.3
+ * Ace v1.3.4
  */
 
 if (typeof jQuery === 'undefined') { throw new Error('Ace\'s JavaScript requires jQuery') }
@@ -348,11 +348,15 @@ jQuery(function($) {
 	function smallDeviceDropdowns() {
 	  if(ace.vars['old_ie']) return;
 	  
-	  $('.ace-nav > li')
-	  .on('shown.bs.dropdown.navbar', function(e) {
+	  $(document)
+	  .on('shown.bs.dropdown.navbar', '.ace-nav > li.dropdown-modal', function(e) {
 		adjustNavbarDropdown.call(this);
+		var self = this;
+		$(window).on('resize.navbar.dropdown', function() {
+			adjustNavbarDropdown.call(self);
+		})
 	  })
-	  .on('hidden.bs.dropdown.navbar', function(e) {
+	  .on('hidden.bs.dropdown.navbar', '.ace-nav > li.dropdown-modal', function(e) {
 		$(window).off('resize.navbar.dropdown');
 		resetNavbarDropdown.call(this);
 	  })
@@ -436,13 +440,6 @@ jQuery(function($) {
 		else {
 			if($sub.length != 0) resetNavbarDropdown.call(this, $sub);
 		}
-		
-		var self = this;
-		$(window)
-		.off('resize.navbar.dropdown')
-		.one('resize.navbar.dropdown', function() {
-			$(self).triggerHandler('shown.bs.dropdown.navbar');
-		})
 	  }
 
 	  //reset scrollbars and user menu
@@ -500,7 +497,8 @@ jQuery(function($) {
 
 	return val;
  }
- $$.getAttrSettings = function(el, attr_list, prefix) {
+ $$.getAttrSettings = function(elem, attr_list, prefix) {
+	if(!elem) return;
 	var list_type = attr_list instanceof Array ? 1 : 2;
 	//attr_list can be Array or Object(key/value)
 	var prefix = prefix ? prefix.replace(/([^\-])$/ , '$1-') : '';
@@ -511,7 +509,7 @@ jQuery(function($) {
 		var name = list_type == 1 ? attr_list[li] : li;
 		var attr_val, attr_name = $$.unCamelCase(name.replace(/[^A-Za-z0-9]{1,}/g , '-')).toLowerCase()
 
-		if( ! ((attr_val = el.getAttribute(prefix + attr_name))  ) ) continue;
+		if( ! ((attr_val = elem.getAttribute(prefix + attr_name))  ) ) continue;
 		settings[name] = $$.strToVal(attr_val);
 	}
 
@@ -525,6 +523,7 @@ jQuery(function($) {
 	return window.innerHeight || document.documentElement.clientHeight;
  }
  $$.redraw = function(elem, force) {
+	if(!elem) return;
 	var saved_val = elem.style['display'];
 	elem.style.display = 'none';
 	elem.offsetHeight;
@@ -559,47 +558,74 @@ jQuery(function($) {
 		var $overlay = $();//empty set
 
 		this.force_reload = false;//set jQuery ajax's cache option to 'false' to reload content
-		this.loadUrl = function(hash, cache) {
+		this.loadUrl = function(hash, cache, manual_trigger) {
 			var url = false;
 			hash = hash.replace(/^(\#\!)?\#/, '');
 			
 			this.force_reload = (cache === false)
 			
 			if(typeof this.settings.content_url === 'function') url = this.settings.content_url(hash);
-			if(typeof url === 'string') this.getUrl(url, hash, false);
+			if(typeof url === 'string') this.getUrl(url, hash, manual_trigger);
 		}
 		
 		this.loadAddr = function(url, hash, cache) {
 			this.force_reload = (cache === false);
 			this.getUrl(url, hash, false);
 		}
+
+
+		this.reload = function() {
+			var hash = $.trim(window.location.hash);
+			if(!hash && this.settings.default_url) hash = this.settings.default_url;
+			
+			this.loadUrl(hash, false);
+		}
+		this.post = function(url, data, updateView, extraParams) {
+			var url = url || $.trim(location.href.replace(location.hash,''));
+			if(!url) return;
+			var data = data || {}
+			var updateView = updateView || false;
+			this.getUrl(url, null, false, 'POST', data, updateView, extraParams);
+		}
 		
-		this.getUrl = function(url, hash, manual_trigger) {
+		
+		this.getUrl = function(url, hash, manual_trigger, method, data, updateView, extraParams) {
 			if(working) {
 				return;
 			}
+			
+			var method = method || 'GET';
+			var updateView = (method == 'GET') || (method == 'POST' && updateView == true)
+			var data = data || null;
 		
 			var event
-			$contentArea.trigger(event = $.Event('ajaxloadstart'), {url: url, hash: hash})
+			$contentArea.trigger(event = $.Event('ajaxloadstart'), {url: url, hash: hash, method: method, data: data})
 			if (event.isDefaultPrevented()) return;
 			
 			self.startLoading();
+			
+			
+			var ajax_params = method == 'GET' ? {'url': url, 'cache': !this.force_reload} : {'url': url, 'method' : 'POST', 'data': data}
+			if(method == 'POST' && typeof extraParams == 'object') ajax_params = $.extend({}, ajax_params, extraParams);
 
-			$.ajax({
-				'url': url,
-				'cache': !this.force_reload
-			})
+			$.ajax(ajax_params)
 			.error(function() {
-				$contentArea.trigger('ajaxloaderror', {url: url, hash: hash});
+				$contentArea.trigger('ajaxloaderror', {url: url, hash: hash, method: method, data: data});
 				
 				self.stopLoading(true);
 			})
 			.done(function(result) {
-				$contentArea.trigger('ajaxloaddone', {url: url, hash: hash});
+				$contentArea.trigger('ajaxloaddone', {url: url, hash: hash, method: method, data: data});
+				if(method == 'POST') {
+					var event
+					$contentArea.trigger(event = $.Event('ajaxpostdone', {url: url, data: data, result: result}))
+					if( event.isDefaultPrevented() ) updateView = false;
+				}
 				
-				var link_element = null, link_text = '';;
+				
+				var link_element = null, link_text = '';
 				if(typeof self.settings.update_active === 'function') {
-					link_element = self.settings.update_active.call(null, hash, url);
+					link_element = self.settings.update_active.call(null, hash, url, method, updateView);
 				}
 				else if(self.settings.update_active === true && hash) {
 					link_element = $('a[data-url="'+hash+'"]');
@@ -620,7 +646,7 @@ jQuery(function($) {
 							nav.closest('.sidebar[data-sidebar-scroll=true]').each(function() {
 								var $this = $(this);
 								$this.ace_sidebar_scroll('reset');
-								if(manual_trigger) $this.ace_sidebar_scroll('scroll_to_active');//first time only
+								if(manual_trigger == true) $this.ace_sidebar_scroll('scroll_to_active');//first time only
 							})
 						}
 					}
@@ -628,26 +654,28 @@ jQuery(function($) {
 
 				/////////
 				if(typeof self.settings.update_breadcrumbs === 'function') {
-					link_text = self.settings.update_breadcrumbs.call(null, hash, url, link_element);
+					link_text = self.settings.update_breadcrumbs.call(null, hash, url, link_element, method, updateView);
 				}
 				else if(self.settings.update_breadcrumbs === true && link_element != null && link_element.length > 0) {
 					link_text = updateBreadcrumbs(link_element);
 				}
 				/////////
-
-				//convert "title" and "link" tags to "div" tags for later processing
-				result = String(result)
-					.replace(/<(title|link)([\s\>])/gi,'<div class="hidden ajax-append-$1"$2')
-					.replace(/<\/(title|link)\>/gi,'</div>')
-			
 				
 				$overlay.addClass('content-loaded').detach();
-				$contentArea.empty().html(result);
+				if(updateView) {
+					//convert "title" and "link" tags to "div" tags for later processing
+					result = String(result)
+						.replace(/<(title|link)([\s\>])/gi,'<div class="hidden ajax-append-$1"$2')
+						.replace(/<\/(title|link)\>/gi,'</div>')
+					$contentArea.empty().html(result);
+				}
 				
 				$(self.settings.loading_overlay || $contentArea).append($overlay);
-	
+
+
+
 				//remove previous stylesheets inserted via ajax
-				setTimeout(function() {
+				if(updateView) setTimeout(function() {
 					$('head').find('link.ace-ajax-stylesheet').remove();
 
 					var main_selectors = ['link.ace-main-stylesheet', 'link#main-ace-style', 'link[href*="/ace.min.css"]', 'link[href*="/ace.css"]']
@@ -672,22 +700,25 @@ jQuery(function($) {
 				//////////////////////
 
 				if(typeof self.settings.update_title === 'function') {
-					self.settings.update_title.call(null, hash, url, link_text);
+					self.settings.update_title.call(null, hash, url, link_text, method, updateView);
 				}
-				else if(self.settings.update_title === true) {
+				else if(self.settings.update_title === true && method == 'GET') {
 					updateTitle(link_text);
 				}
-				
 
-				if( !manual_trigger ) {
+				if( !manual_trigger && updateView ) {
 					$('html,body').animate({scrollTop: 0}, 250);
 				}
 
 				//////////////////////
-				$contentArea.trigger('ajaxloadcomplete', {url: url, hash: hash});
+				$contentArea.trigger('ajaxloadcomplete', {url: url, hash: hash, method: method, data:data});
 				//////////////////////
 				
-				self.stopLoading();
+				
+				//if result contains call to "loadScripts" then don't stopLoading now
+				var re = /\.(?:\s*)ace(?:_a|A)jax(?:\s*)\((?:\s*)(?:\'|\")loadScripts(?:\'|\")/;
+				if(result.match(re)) self.stopLoading();
+				else self.stopLoading(true);
 			})
 		}
 		
@@ -813,6 +844,7 @@ jQuery(function($) {
 		 
 		 
 		 this.loadScripts = function(scripts, callback) {
+			var scripts = scripts || [];
 			$.ajaxPrefilter('script', function(opts) {opts.cache = true});
 			setTimeout(function() {
 				//let's keep a list of loaded scripts so that we don't load them more than once!
@@ -893,7 +925,7 @@ jQuery(function($) {
 			var hash = $.trim(window.location.hash);
 			if(!hash || hash.length == 0) return;
 			
-			self.loadUrl(hash);
+			self.loadUrl(hash, null, manual_trigger);
 		}).trigger('hashchange.ace_ajax', [true]);
 		
 		var hash = $.trim(window.location.hash);
@@ -903,7 +935,7 @@ jQuery(function($) {
 
 
 
-	$.fn.aceAjax = $.fn.ace_ajax = function (option, value, value2, value3) {
+	$.fn.aceAjax = $.fn.ace_ajax = function (option, value, value2, value3, value4) {
 		var method_call;
 
 		var $set = this.each(function () {
@@ -913,9 +945,10 @@ jQuery(function($) {
 
 			if (!data) $this.data('ace_ajax', (data = new AceAjax(this, options)));
 			if (typeof option === 'string' && typeof data[option] === 'function') {
-				if(value3 != undefined) method_call = data[option](value, value2, value3);
-				else if(value2 != undefined) method_call = data[option](value, value2);
-				else method_call = data[option](value);
+				if(value4 !== undefined) method_call = data[option](value, value2, value3, value4);
+				else if(value3 !== undefined) method_call = data[option](value, value2, value3);
+				else if(value2 !== undefined) method_call = data[option](value, value2);
+				else method_call == data[option](value);
 			}
 		});
 
@@ -2111,7 +2144,7 @@ jQuery(function($) {
 
  if( ace.vars['very_old_ie'] ) return;
  //ignore IE7 & below
- 
+
  var hasTouch = ace.vars['touch'];
  var nativeScroll = ace.vars['old_ie'] || hasTouch;
  
@@ -2155,8 +2188,9 @@ jQuery(function($) {
 	
 	var scroll_right = false;
 	//scroll style class
+	var hasHoverDelay = self.settings.sub_hover_delay || false;
 	
-	if(hasTouch) self.settings.sub_hover_delay = parseInt(Math.max(self.settings.sub_hover_delay, 2500));//for touch device, delay is at least 2.5sec
+	if(hasTouch && hasHoverDelay) self.settings.sub_hover_delay = parseInt(Math.max(self.settings.sub_hover_delay, 2500));//for touch device, delay is at least 2.5sec
 
 	var $window = $(window);
 	//navbar used for adding extra offset from top when adjusting submenu
@@ -2278,7 +2312,7 @@ jQuery(function($) {
 		}
 		
 		
-		var sub_hide = getSubHide(this);
+		var sub_hide = hasHoverDelay ? getSubHide(this) : null;
 		//var show_sub = false;
 
 		if(sub) {
@@ -2287,7 +2321,7 @@ jQuery(function($) {
 			
 			var newScroll = ace.helper.scrollTop();
 			//if submenu is becoming visible for first time or document has been scrolled, then adjust menu
-			if( !sub_hide.is_visible() || (!hasTouch && newScroll != currentScroll) || old_ie ) {
+			if( (hasHoverDelay && !sub_hide.is_visible()) || (!hasTouch && newScroll != currentScroll) || old_ie ) {
 				//try to move/adjust submenu if the parent is a li.hover or if submenu is minimized
 				//if( is_element_pos(sub, 'absolute') ) {//for example in small device .hover > .submenu may not be absolute anymore!
 					$(sub).addClass('can-scroll');
@@ -2308,7 +2342,7 @@ jQuery(function($) {
 		 }
 		}
 		//if(show_sub) 
-		sub_hide.show();
+		hasHoverDelay && sub_hide.show();
 		
 	 }).on(event_2, '.nav-list li, .sidebar-shortcuts', function (e) {
 		sidebar_vars = $sidebar.ace_sidebar('vars');
@@ -2317,7 +2351,7 @@ jQuery(function($) {
 
 		if( !$(this).hasClass('hover-show') ) return;
 
-		getSubHide(this).hideDelay();
+		hasHoverDelay && getSubHide(this).hideDelay();
 	 });
 	 
 	

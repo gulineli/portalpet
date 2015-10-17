@@ -3,179 +3,61 @@
 {{ajax = request.ajax or request.vars.get('ajax')}}
 
 
+
+
 {{if not ajax:}}
 <div class="tabbable">
     {{include 'default/message_bar.html'}}
-
-    <div class="tab-content no-border no-padding">
-	    <div class="tab-pane in active">
-		    <div class="message-container">
-                <div id="id-message-item-navbar" class="message-navbar align-center clearfix">
-	                <div class="message-bar">
-<!--		                <div class="message-toolbar">-->
-<!--			                <div class="inline position-relative align-left">-->
-<!--				                <a href="#" class="btn-message btn btn-xs dropdown-toggle" data-toggle="dropdown">-->
-<!--					                <span class="bigger-110">Ações</span>-->
-
-<!--					                <i class="icon-caret-down icon-on-right"></i>-->
-<!--				                </a>-->
-
-<!--				                <ul class="dropdown-menu dropdown-lighter dropdown-caret dropdown-125">-->
-<!--					                <li>-->
-<!--						                <a href="#">-->
-<!--							                <i class="icon-mail-reply blue"></i>-->
-<!--							                &nbsp; Responder-->
-<!--						                </a>-->
-<!--					                </li>-->
-
-<!--					                <li>-->
-<!--						                <a href="#">-->
-<!--							                <i class="icon-mail-forward green"></i>-->
-<!--							                &nbsp; Encaminhar-->
-<!--						                </a>-->
-<!--					                </li>-->
-
-<!--					                <li>-->
-<!--						                <a href="#">-->
-<!--							                <i class="icon-folder-open orange"></i>-->
-<!--							                &nbsp; Arquivar-->
-<!--						                </a>-->
-<!--					                </li>-->
-
-<!--					                <li class="divider"></li>-->
-
-<!--					                <li>-->
-<!--						                <a href="#">-->
-<!--							                <i class="icon-eye-close green"></i>-->
-<!--							                &nbsp; Marcar como não lida-->
-<!--						                </a>-->
-<!--					                </li>-->
-
-<!--					                <li>-->
-<!--						                <a href="#">-->
-<!--							                <i class="icon-flag-alt red"></i>-->
-<!--							                &nbsp; Flag-->
-<!--						                </a>-->
-<!--					                </li>-->
-
-<!--					                <li class="divider"></li>-->
-
-<!--					                <li>-->
-<!--						                <a href="#">-->
-<!--							                <i class="icon-trash red bigger-110"></i>-->
-<!--							                &nbsp; Deletar-->
-<!--						                </a>-->
-<!--					                </li>-->
-<!--				                </ul>-->
-<!--			                </div>-->
-
-<!--			                <div class="inline position-relative align-left">-->
-<!--				                <a href="#" class="btn-message btn btn-xs dropdown-toggle" data-toggle="dropdown">-->
-<!--					                <i class="icon-folder-close-alt bigger-110"></i>-->
-<!--					                <span class="bigger-110">Mover para</span>-->
-
-<!--					                <i class="icon-caret-down icon-on-right"></i>-->
-<!--				                </a>-->
-
-<!--				                <ul class="dropdown-menu dropdown-lighter dropdown-caret dropdown-125">-->
-<!--					                <li>-->
-<!--						                <a href="#">-->
-<!--							                <i class="icon-stop pink2"></i>-->
-<!--							                &nbsp; Tag#1-->
-<!--						                </a>-->
-<!--					                </li>-->
-
-<!--					                <li>-->
-<!--						                <a href="#">-->
-<!--							                <i class="icon-stop blue"></i>-->
-<!--							                &nbsp; Family-->
-<!--						                </a>-->
-<!--					                </li>-->
-
-<!--					                <li>-->
-<!--						                <a href="#">-->
-<!--							                <i class="icon-stop green"></i>-->
-<!--							                &nbsp; Friends-->
-<!--						                </a>-->
-<!--					                </li>-->
-
-<!--					                <li>-->
-<!--						                <a href="#">-->
-<!--							                <i class="icon-stop grey"></i>-->
-<!--							                &nbsp; Work-->
-<!--						                </a>-->
-<!--					                </li>-->
-<!--				                </ul>-->
-<!--			                </div>-->
-
-<!--			                <a href="#" class="btn btn-xs btn-message">-->
-<!--				                <i class="icon-trash bigger-125"></i>-->
-<!--				                <span class="bigger-110">Apagar</span>-->
-<!--			                </a>-->
-<!--		                </div>-->
-	                </div>
-
-	                <div>
-		                <div class="messagebar-item-left">
-			                <a href="{{=URL('default','inbox')}}" class="btn-back-message-list">
-				                <i class="icon-arrow-left blue bigger-110 middle"></i>
-				                <b class="bigger-110 middle">Voltar</b>
-			                </a>
-		                </div>
-
-		                <div class="messagebar-item-right">
-			                <i class="icon-time bigger-110 orange middle"></i>
-			                <span class="time grey">{{=cooldate(mensagem.hora)}}</span>
-		                </div>
-	                </div>
-                </div>
-                {{pass}}
+    <div class="message-list-container">
+    {{pass}}
                 
-                <div class="space-4"></div>
-                
-                <span class="blue bigger-125">Assunto: {{=A(mensagem.assunto,_href=URL('default','message',vars=dict(message=mensagem.hash))) if ajax else mensagem.assunto }} </span>
 
-                {{for i,m in enumerate(mensagens_relacionadas):}}
-                    <div class="space-4"></div>
-                    <div class="widget-box{{if i:}} collapsed{{pass}}">
-                        <div class="widget-header widget-header-large">
-                            <i class="icon-star orange2 mark-star"></i>
+    <div class="message-header clearfix">
+	    <div class="pull-left">
+		    <span class="blue bigger-125"> 
+		        {{=A(mensagem.assunto,_href=URL('default','message',vars=dict(message=mensagem.hash))) if ajax else mensagem.assunto }}
+		    </span>
 
-                            &nbsp;
-                            <a href="#" class="sender" title="{{=m.de.nome}}">
-                                <img class="middle" alt="" src="{{=URL('download',args=(m.de.miniatura,))}}"  width="32" />
-                            </a>
-                            
-                            &nbsp;
-                            <i class="icon-time bigger-110 orange middle"></i>
-                            <span class="time">{{=date2str(m.hora)}}</span>
-                            
-                            <div class="widget-toolbar">
-                                <a href="#" data-action="collapse">
-									<i class="icon-chevron-{{if i:}}down{{else:}}up{{pass}}"></i>
-								</a>
-								
-                                {{if i==0:}}
-                                    <a href="{{=URL('default','send_message',vars=dict(assunto=m.assunto,master=mensagem.hash,reply=True),url_encode=True)}}">
-	                                    <i class="icon-reply green icon-only bigger-130"></i>
-                                    </a>
-                                {{pass}}
+	    </div>
 
-                                <a href="{{=URL('default','delete_message',vars={'mensagem':m.hash})}}">
-	                                <i class="icon-trash red icon-only bigger-130"></i>
-                                </a>
-							</div>
-                        </div>
-                        <div class="widget-body">
-                            <div class="widget-main">
-                                <div class="message-body">
-	                                {{=XML(m.conteudo)}}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {{pass}}
-            </div>
-        </div>
+	    <div class="pull-right action-buttons">
+		    <a href="#">
+			    <i class="ace-icon fa fa-reply green icon-only bigger-130"></i>
+		    </a>
+
+		    <a href="#">
+			    <i class="ace-icon fa fa-mail-forward blue icon-only bigger-130"></i>
+		    </a>
+
+		    <a href="#">
+			    <i class="ace-icon fa fa-trash-o red icon-only bigger-130"></i>
+		    </a>
+	    </div>
     </div>
-</div>
+
+    <div class="space-4"></div>
+            
+    {{for i,m in enumerate(mensagens_relacionadas):}}
+        <i class="ace-icon fa fa-star orange2"></i>
+
+        &nbsp;
+        <a href="#" class="sender" title="{{=m.de.nome}}">
+            <img class="middle" alt="{{=m.de.nome}}" src="{{=URL('download',args=(m.de.miniatura,))}}"  width="32" />
+        </a>
+        &nbsp;
+
+        <i class="ace-icon fa fa-clock-o bigger-110 orange middle"></i>
+        <span class="time grey">{{=date2str(m.hora)}}</span>
+        <!-- /section:pages/inbox.message-header -->
+        <div class="hr hr-double"></div>
+
+        <!-- #section:pages/inbox.message-body -->
+        <div class="message-body">
+            {{=XML(m.conteudo)}}
+        </div>
+    {{pass}}
+
+{{if not ajax:}}
+    </div>
+    </div>
+    {{pass}}
